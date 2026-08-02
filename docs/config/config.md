@@ -10,7 +10,7 @@
 - When you have done bed meshing, or PID tuning or something like that, a *don't touch* paragraph will appear. I removed mine from this repository so you have to generate your own. 
 
 ## [steppers.cfg](./steppers.cfg)
-- I may have flipped some of the motor-wires, so you might need to add or remove a **!** from your stepper pin to reverse that specific motor.
+- I may have flipped some of the motor-wires, so you might need to add or remove a `!` from your stepper pin to reverse that specific motor.
 - The PID settings are probably different too for your device. You can comment out the PID settings to use the default klipper ones.
 - The extruder is rotation tuned, but yours might be different. Though it's probably a good baseline.
 - The pressure advance should be tuned. It's different for *every printer*, *every temperature* and *every filament*...
@@ -38,7 +38,10 @@
 > 
 > as *Start g-code* in your slicer
 - The LED macro is just for a visual representation of when the Klipper firmware on the Rpi Zero 2W is started and I can connect to it. Since i don't have a screen connected *yet*, that's tho only way except retrying constantly.
-  
+
+## [accessories.cfg(./accessories.cfg)
+- Currently just a button for the print-head LED
+
 ## Extensions
 
 ### [KAMP_SETTINGS.cfg](./KAMP_SETTINGS.cfg)
