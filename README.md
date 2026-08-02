@@ -1,4 +1,4 @@
-# Anycubic Kobra Max with BTT SKR3 EZ running Klipper
+# Anycubic Kobra Max with BTT SKR 3 EZ running Klipper
 This repository documents my conversion of an original Anycubic Kobra Max to a BIGTREETECH SKR 3 EZ running Klipper.
 The build retains most of the original printer hardware, including the Bowden extruder, motors, fans, external bed MOSFET and LeviQ strain-gauge probe.
 
@@ -46,6 +46,8 @@ The build retains most of the original printer hardware, including the Bowden ex
 | [Issues](./docs/Issues.md) | Symptoms, causes and fixes encountered during the conversion |
 | [Useful links](./Useful_links.md) | External projects, guides and discussions used during the build |
 | [STL files](./docs/stl/) | Modified mounting and printhead parts used in this build |
+| [Hardware](./docs/Hardware.md) | Exact hardware inventory, retained components, replacements and pending additions |
+| [Project journey](./docs/Journey.md) | Chronological development history, failures, discoveries and verified conclusions |
 
 ## Verification status
 
