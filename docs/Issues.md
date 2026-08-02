@@ -289,7 +289,7 @@ After moving the connector:
 
 During wiring tests, the Raspberry Pi was powered from the printer and lost power every time the printer was switched off.
 
-Repeated hard power cuts corrupted the Raspberry Pi installation.
+Repeated hard power cuts likely caused corruption in the Raspberry Pi installation.
 
 ### Fix
 
