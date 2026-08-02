@@ -1,7 +1,7 @@
 
 ## Wiring diagram of the Kobra Max connections to the BTT SKR3 EZ board
 
-![Excel Wiring Diagram](https://github.com/Bratwurst04/Kobra-Max-SKR3EZ-Klipper/blob/main/docs/pics/Anycubic_Kobra_Max_Klipper.png)
+![Excel Wiring Diagram](./pics/Anycubic_Kobra_Max_Klipper.png)
 
 ## Re-crimping
 
