@@ -76,7 +76,7 @@ For example:
 #[include autotune_tmc.cfg]
 ```
 
-Klipper will probably fail to load if an included file does not exist.
+Klipper will fail to load if an included file does not exist.
 
 
 ## 4. Verify board and MCU revision
