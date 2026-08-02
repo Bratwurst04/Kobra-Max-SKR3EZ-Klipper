@@ -42,6 +42,8 @@
 ## [accessories.cfg(./accessories.cfg)
 - Currently just a button for the print-head LED
 
+---
+
 ## Extensions
 
 ### [KAMP_SETTINGS.cfg](./KAMP_SETTINGS.cfg)
