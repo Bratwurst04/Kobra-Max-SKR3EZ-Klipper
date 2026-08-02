@@ -40,7 +40,7 @@
 - KIAUH
 - KAMP
 - Klipper TMC Autotune
-- Moonsail
+- Mainsail
 - Moonraker
 
 <p><details>
@@ -67,7 +67,7 @@
   <summary><h3>Future upgrades</h3></summary>
 
 #### Must-have
-- Quieter powersupply fan
+- Quieter powers upply fan
 - Nozzle cleaner
 
 #### Maybe
@@ -99,7 +99,7 @@
 - I had to do a lot of rewiring, recrimping and labeling. You can find it [here](./docs/Wiring.md).
 
 ### Printer head
-- My original printer head cover broke pretty early, so I printed another one on my other printer. I used [this](https://www.thingiverse.com/thing:5380573) one, but pretty heavily modified. I modified it in blender, so the quality of the flat faces aren't the greatest but it's functional. Among other things I moved stuff around, made the screw holes tighter and used modifiers in the slicer to create some nice texture on the front. Here aswell I skipped the heat inserts and used original mixed with ordinary screws.
+- My original printer head cover broke pretty early, so I printed another one on my other printer. I used [this](https://www.thingiverse.com/thing:5380573) one, but pretty heavily modified. I modified it in blender, so the quality of the flat faces aren't the greatest but it's functional. Among other things I moved stuff around, made the screw holes tighter and used modifiers in the slicer to create some nice texture on the front. Here as well I skipped the heat inserts and used original mixed with ordinary screws.
 - I also changed the whole hotend to a similar one from Amazon since I broke the original one
 
 ### Extruder
