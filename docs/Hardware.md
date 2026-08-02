@@ -625,6 +625,7 @@ This document describes what hardware is present and how the build is structured
 
 Use `Wiring.md` for electrical connections and `Issues.md` for symptoms, causes and fixes.
 
+---
 
 > [!NOTE]
-> This document was written with heavy LLM use, but based on my own research and findings
+> This document was drafted with substantial assistance from an LLM, based on my own measurements, testing, research and findings.
