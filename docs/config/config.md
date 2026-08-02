@@ -27,7 +27,7 @@
 - Same with the *off_below*
 
 ## [leviq_probe.cfg](./leviq_probe.cfg)
-- It's set up for using KAMP. It probably works without but it's recommended för QoL
+- It's set up for using KAMP. It probably works without but it's recommended for QoL
 
 ## [macros.cfg](./macros.cfg)
 - Start macro in here instead of slicer for ease of access
