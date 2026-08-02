@@ -39,7 +39,7 @@
 > as *Start g-code* in your slicer
 - The LED macro is just for a visual representation of when the Klipper firmware on the Rpi Zero 2W is started and I can connect to it. Since i don't have a screen connected *yet*, that's tho only way except retrying constantly.
 
-## [accessories.cfg(./accessories.cfg)
+## [accessories.cfg](./accessories.cfg)
 - Currently just a button for the print-head LED
 
 ---
