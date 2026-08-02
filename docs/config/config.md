@@ -1,7 +1,7 @@
 # Config Files
 > [!NOTE]
-> Some/all *.cfg* files have comments in Swedish.
-> I Might change that in the future
+> Some/all *.cfg* files have comments in Swedish. I might change that in the future  \
+> A lot of values are probably machine specific so you might need to measure or calibrate before use
 
 ## [printer.cfg](./printer.cfg)
 >[!IMPORTANT]
@@ -14,20 +14,23 @@
 - I may have flipped some of the motor-wires, so you might need to add or remove a `!` from your stepper pin to reverse that specific motor.
 - The PID settings are probably different too for your device. You can comment out the PID settings to use the default klipper ones.
 - The extruder is rotation tuned, but yours might be different. Though it's probably a good baseline.
-- The pressure advance should be tuned. It's different for *every printer*, *every temperature* and *every filament*...
+- The *pressure advance* should be tuned. It's different for *every printer*, *every temperature* and *every filament*...
+- The *rotation_distance* should also be calibrated per printer
 
 ## [tmc.cfg](./tmc.cfg)
 - Nothing is tuned here right now, but it's a conservative *(i think)* baseline.
 
 ## [bed.cfg](./bed.cfg)
 - The Max and Min temp are klipper *STOP* commands, which is why they are put a bit above and below the normal operating temp
+- *min_temp: 18* might be to cold for a garage or something
 
 ## [fans.cfg](./fans.cfg)
 - You can change the *kick-on* time, I just guessed something and it seems to work :shrug:
 - Same with the *off_below*
 
 ## [leviq_probe.cfg](./leviq_probe.cfg)
-- It's set up for using KAMP. It probably works without but it's recommended for QoL
+- It's set up for using KAMP. It probably works without but it's recommended for QoL.
+- *mesh_min*, *mesh_max* etc. shouldn't be printer specific but it's good to check. The values correspond to the white lines on the bed.
 
 ## [macros.cfg](./macros.cfg)
 - Start macro in here instead of slicer for ease of access
