@@ -7,16 +7,15 @@
 > Don't blindly trust any code or cfg files as there is a risk of damaging your equipment
 > This is tested and verified on ***my*** Anycubic Kobra Max and BTT SKR3 EZ, *YMMV*
 
-Original LeviQ
-
-Original Bowden
-
-Original Hotend
+- Original LeviQ *(strain gauge)*
+- Original Bed
+- Original Hotend
 
 ---
 
 ## Features
 
+#### Original
 - Original LeviQ works
 - Original strain gauge
 - Original hotend
@@ -24,7 +23,53 @@ Original Hotend
 - Original fans
 - Original LED
 - Original bed MOSFET
+- Original motors
+
+#### BigTreeTech
 - SKR 3 EZ
-- EZ2209 UART
+- 4x EZ2209 UART
+
+#### Raspberry Pi
+- Raspberry Pi Zero 2W
+- Mellow fly ADXL345 USB-C accelerometer
+
+#### Klipper
+- Klipper
+- Klipper Backup
+- KIAUH
 - KAMP
-- Pressure Advance
+- Klipper TMC Autotune
+- Moonsail
+- Moonraker
+
+
+## In progress
+
+### 3d printing
+- Case for Rpi
+
+### Tuning
+- Flow
+- Temperature
+- Input Shaper
+- Speed (max and quality)
+
+### Accessories
+- Accelerometer for *input shaper*
+- Screen for *KlipperScreen*
+
+
+## Future upgrades
+
+### Must-have
+- Quieter powersupply fan
+- Nozzle cleaner
+
+### Maybe
+- Direct drive
+- New hotend and/or printhead
+- PEI bed
+- LED-strip in chassis
+- New motors for *X,Y,Z*
+- Home-assistant connection
+- Eddy current sensor
