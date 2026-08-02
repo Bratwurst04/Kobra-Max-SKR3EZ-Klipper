@@ -114,7 +114,8 @@ The following values should be measured or calibrated on each printer.
 | Bed mesh | Saved configuration or KAMP | Bed shape and operating temperature |
 | KAMP margins and purge values | `KAMP_Settings.cfg` | Printable area and purge preference |
 
-> [!IMPORTANT]
+
+### IMPORTANT
 > `mesh_min` and `mesh_max` are machine-specific.
 >
 > The current values match the measured printable area of this machine, not the full mechanical travel area.
@@ -152,7 +153,7 @@ SAVE_CONFIG
 
 to generate your own values.
 
-> [!NOTE]
+### NOTE
 > If I mistakenly don't remove the generated block, it's *still* printer specific
 
 </details>
@@ -419,7 +420,8 @@ PRINT_START BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperat
 The delayed LED macro runs after the Klippy host process has started and loaded the configuration.
 
 It provides a visible indication that Klipper is running when no physical screen is connected.
-> [!NOTE]
+
+### NOTE
 > It does not indicate that Raspberry Pi OS has finished every background task or that the entire printer has passed a self-test.  
 > My testing reveals a roughly 1 second delay from light on, to mainsail initializing.
 
