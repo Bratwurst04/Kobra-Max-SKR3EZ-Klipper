@@ -116,6 +116,22 @@
 ---
 
 <p><details>
+  <summary><h2>Verification status :heavy_check_mark: </h2></summary>
+
+#### Verified?
+- [x] | X/Y/Z motion | *Original motors*
+- [x] | Original LeviQ
+- [x] | Hotend and thermistor | *Original-style replacement hotend*
+- [x] | Bed heater and MOSFET | *Original*
+- [x] | KAMP | *Klipper Adaptive Mesh and line Purge*
+- [ ] | Input Shaper | **Pending**
+- [ ] | Filament runout sensor | **Pending** | Wired but not configured
+
+</details></p>
+
+---
+
+<p><details>
   <summary><h2>How to :grey_question: </h2></summary>
 
 *Coming soon*
