@@ -90,7 +90,7 @@
 
 ### Motherboard
 - The motherboard is switched from the original to the BTT SKR3 EZ, with 4 EZ2209 UART motor drivers and all new JST connectors
-- It's held in place in the printer chassis with a modified version of [this](https://www.thingiverse.com/thing:6247028) adapter. [My modified version](./docs/stl/) moves the mounting holes around a bit and allows for normal 3mm screws instead of heated inserts.
+- It's held in place in the printer chassis with a modified version of [this](https://www.thingiverse.com/thing:6247028) adapter. [My modified version](./docs/stl/Kobra%20Max%20SKR3%20Adapter%20plate.stl) moves the mounting holes around a bit and allows for normal 3mm screws instead of heated inserts.
 
 ### Chassis
 - To access the sd-card and USB-B on the motherboard, I had to cut into the side of the printer chassis. With some electrical tape i covered the sharp edges of the cut. Functional but maybe not very pretty
@@ -99,7 +99,7 @@
 - I had to do a lot of rewiring, recrimping and labeling. You can find it [here](./docs/Wiring.md).
 
 ### Printer head
-- My original printer head cover broke pretty early, so I printed another one on my other printer. I used [this](https://www.thingiverse.com/thing:5380573) one, but pretty heavily modified. I modified it in blender, so the quality of the flat faces aren't the greatest but it's functional. Among other things I moved stuff around, made the screw holes tighter and used modifiers in the slicer to create some nice texture on the front. Here as well I skipped the heat inserts and used original mixed with ordinary screws.
+- My original printer head cover broke pretty early, so I printed another one on my other printer. I used [this](https://www.thingiverse.com/thing:5380573) one, but pretty heavily modified. I [modified it](./docs/stl/Kobra%20max%20head%202.stl) in blender, so the quality of the flat faces aren't the greatest but it's functional. Among other things I moved stuff around, made the screw holes tighter and used modifiers in the slicer to create some nice texture on the front. Here as well I skipped the heat inserts and used original mixed with ordinary screws. 
 - I also changed the whole hotend to a similar one from Amazon since I broke the original one
 
 ### Extruder
