@@ -19,6 +19,7 @@
 
 ## [tmc.cfg](./tmc.cfg)
 - Nothing is tuned here right now, but it's a conservative *(i think)* baseline.
+- You should calibrate your motor currents.
 
 ## [bed.cfg](./bed.cfg)
 - The Max and Min temp are klipper *STOP* commands, which is why they are put a bit above and below the normal operating temp
