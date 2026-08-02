@@ -482,3 +482,4 @@ KAMP also requires:
 
 Do **not** start with a full print before the safety-critical functions have been verified.
   
+</details>
