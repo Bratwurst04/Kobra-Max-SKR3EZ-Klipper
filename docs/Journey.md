@@ -952,5 +952,5 @@ A journey explains why.
 
 ---
 
->[!NOTE]
->This document was written with heavy use from LLM, but based on my research and findings
+> [!NOTE]
+> This document was drafted with substantial assistance from an LLM, based on my own measurements, testing, research and findings.
