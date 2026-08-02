@@ -11,10 +11,12 @@
 - Original Bed
 - Original Hotend
 
+- Raspberry Pi Zero 2W
+
 ---
 
 <p><details>
-  <summary><h2>Features</h2></summary>
+  <summary><h2>Features :gear: </h2></summary>
 
 #### Original
 - Original LeviQ works
@@ -48,6 +50,7 @@
 
 #### 3d printing
 - Case for Rpi
+- Case for OTG usb hub
 
 #### Tuning
 - Flow
@@ -67,7 +70,7 @@
   <summary><h3>Future upgrades</h3></summary>
 
 #### Must-have
-- Quieter powers upply fan
+- Quieter power supply fan
 - Nozzle cleaner
 
 #### Maybe
@@ -86,7 +89,7 @@
 ---
 
 <p><details>
-  <summary><h2>Modifications</h2></summary>
+  <summary><h2>Modifications :wrench: </h2></summary>
 
 ### Motherboard
 - The motherboard is switched from the original to the BTT SKR3 EZ, with 4 EZ2209 UART motor drivers and all new JST connectors
@@ -113,7 +116,7 @@
 ---
 
 <p><details>
-  <summary><h2>How to</h2></summary>
+  <summary><h2>How to :grey_question: </h2></summary>
 
 *Coming soon*
 
