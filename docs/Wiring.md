@@ -19,5 +19,5 @@ For the 24V and HEAT wires, i just bundled them up to one respectively and put i
 
 The LeviQ wires needs a bidirectional logic converter. I used a cheap one from AliExpress. It needs a reference 3V3 and 5V and GND, which i took from the board and the 5V wire going to the LeviQ 5V.
 
-According to ![this](https://github.com/smartwareio/SWIO-Kobra-Max-Adapter-Kit/tree/main) person, you need a logic converter:
+According to [this](https://github.com/smartwareio/SWIO-Kobra-Max-Adapter-Kit/tree/main) person, you need a logic converter:
 > The level shifter is REQUIRED to be used with the factory print head. The factory head sends 5V out into the GPIO upon reset. The shifter brings this to safe levels.
