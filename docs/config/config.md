@@ -6,6 +6,7 @@
 ## [printer.cfg](./printer.cfg)
 >[!IMPORTANT]
 >You need to change ***/dev/serial/by-id/*** to match your MCU!
+>The path ***/home/admin/printer_data/gcodes*** is *user* specific.
 - You will want to comment out the *[include ...]* lines of the features that you haven't enabled yet.
 - When you have done bed meshing, or PID tuning or something like that, a *don't touch* paragraph will appear. I removed mine from this repository so you have to generate your own. 
 
@@ -37,7 +38,7 @@
 > `PRINT_START BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperature_initial_layer]`
 > 
 > as *Start g-code* in your slicer
-- The LED macro is just for a visual representation of when the Klipper firmware on the Rpi Zero 2W is started and I can connect to it. Since i don't have a screen connected *yet*, that's tho only way except retrying constantly.
+- The LED macro is just for a visual representation of when Klippy on the Rpi Zero 2W is started and I can connect to it. Since i don't have a screen connected *yet*, that's tho only way except retrying constantly.
 
 ## [accessories.cfg](./accessories.cfg)
 - Currently just a button for the print-head LED
