@@ -20,7 +20,7 @@ The build retains most of the original printer hardware, including the Bowden ex
 | Interface | Mainsail and Moonraker |
 | Firmware | Klipper |
 | Extruder | Original Bowden extruder |
-| Hotend | Original-style replacement hotend |
+| Hotend | Replacement hotend; cross-branch model/calibration status not fully established |
 | Z probe | Original LeviQ strain gauge |
 | Heated bed | Original bed and external MOSFET |
 | Adaptive mesh | KAMP |
@@ -54,18 +54,22 @@ The build retains most of the original printer hardware, including the Bowden ex
 | Function | Status | Notes |
 |---|---|---|
 | X/Y/Z motion | ✅ Verified | Original motors |
-| Extruder motion | ✅ Verified | Original Bowden extruder |
+| Extruder motion | ⚠️ Partially verified | Motion verified; later intermittent skipping/filament grinding unresolved |
 | X/Y endstops | ✅ Verified | Original two-wire endstops |
-| Original LeviQ | ✅ Verified | PB15 probe output and PB14 reset |
-| Z homing | ✅ Verified | LeviQ used as virtual Z endstop |
-| Hotend and thermistor | ✅ Verified | Original-style replacement hotend |
+| Original LeviQ | ⚠️ Reliability reopened | PB15/PB14 mapping verified; later intermittent trigger shifts remain unresolved |
+| Z homing | ⚠️ Reliability reopened | Earlier success; later failed/false-trigger homing not closed |
+| Hotend and thermistor | ⚠️ Partially verified | Earlier heating/prints verified; later replacements and thermistor faults have no final validated setup |
 | Bed heater and MOSFET | ✅ Verified | Original external MOSFET retained |
 | Original fans | ✅ Verified | Part-cooling and hotend fans |
 | Toolhead LED | ✅ Verified | Controlled through PE5 |
-| KAMP adaptive mesh | ✅ Verified | Adaptive mesh and line purge |
+| KAMP adaptive mesh | ⚠️ Integration verified | Adaptive mesh/line purge worked; later LeviQ reliability remains open |
 | Pressure Advance | ✅ Verified | Current value remains machine- and filament-specific |
-| Input Shaper | ⏳ Pending | USB accelerometer setup not yet completed |
+| Input Shaper | ✅ Calibration completed | X/Y MZV results recorded; final saved cfg and print-quality comparison not supplied |
+| Nozzle cleaner | ⚠️ Initial operation reported | Bed-mounted cleaner; final macro/start-sequence version not supplied |
+| Host network | ⚠️ Unresolved / reopened | Later access outages remain unclosed |
 | Filament runout sensor | ⏳ Pending | Wiring mapped but not configured |
+
+The dated tuning and upgrade reports supplement the separate LeviQ/network investigations; their cross-branch order is not fully established. Earlier successes do not close those later-reported faults. The [configuration guide](./docs/config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot) distinguishes machine reports from features absent in the published cfg files.
 
 ---
 
@@ -123,22 +127,22 @@ Mainsail is used as the primary interface.
 
 ### Tuning
 
-- Flow calibration
-- Temperature calibration
-- Input Shaper
-- Maximum and quality-focused print speeds
+- PLA temperature/flow trials and X/Y Input Shaper calibration completed; see [the tuning follow-up](./docs/Journey.md#tuning-and-hardware-upgrade-follow-up)
+- Retraction result inconclusive; sustained maximum flow and quality-focused speed limits not established
+- Post-shaper print comparison not documented
+- Intermittent extrusion and thermistor faults remain open alongside LeviQ/network reliability
 
 ### Accessories
 
 - Filament runout sensor
-- USB accelerometer
+- USB accelerometer used for calibration; final live configuration not included
+- Bed-mounted nozzle cleaner initially working; final start-sequence validation not documented
 - Optional KlipperScreen display
 - Raspberry Pi and USB-hub enclosures
 
 ### Possible future upgrades
 
 - Quieter power-supply fan
-- Nozzle cleaner
 - Direct drive
 - Different hotend or printhead
 - PEI build surface

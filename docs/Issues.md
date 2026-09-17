@@ -22,6 +22,10 @@ The goal is not only to list the final fix, but also to preserve the symptoms th
 | Mixed motor and signal wires | TMC shutdown or motor does not move | Re-map the complete harness and preserve coil pairs |
 | Extruder UART on wrong pin | `Unable to read tmc uart 'extruder' register IFCNT` | Use E0 UART pin PC6 |
 | Bed thermistor on wrong header | Invalid or missing bed temperature | Use TB / PA1 instead of TH1 |
+| [Hotend thermistor failures](#hotend-thermistor-failures-in-the-upgrade-branch) | Repair difficulty and a reported 0.09 Ω "short" on a delivered unit | OEM replacement briefly printed; final faulty component/setup not established |
+| [Intermittent extrusion failure](#intermittent-extruder-skipping-and-filament-grinding) | Skipping, grinding and eventual loss of extrusion | No confirmed cause or lasting fix |
+| [High-flow thermal shutdown](#temperature-loss-during-the-max-flow-trial) | Shutdown around 22 mm³/s despite acceptable-looking output | Thermal limit encountered; missing sock suspected, no controlled retest |
+| [Input Shaper package setup](#input-shaper-dependency-installation) | `libatlas-base-dev` had no installation candidate | Setup subsequently reported OK and calibration completed |
 | SD flashing confirmation | `firmware.bin` remains unchanged | Klipper USB identity and later MCU communication verified; SD rename cause unresolved |
 | Missing Klippy dependency | Service exits before `klippy.log` is created | Restore the Klippy virtual environment's Python dependencies |
 | Raspberry Pi hard power loss | Old IP replies but SSH and Moonraker refuse connections | Reinstallation restored access; corruption and responder identity were not established |
@@ -426,6 +430,28 @@ After changing the UART pin to `PC6`:
 <details>
 <summary><h1>Temperature sensors</h1></summary>
 
+## Hotend thermistor failures in the upgrade branch
+
+**Status: reported hardware faults; final replacement and calibration unresolved.**
+
+### Symptoms and attempted repair
+
+On 2026-08-07 I reported a thermistor problem and said that repairing it had proved too fiddly. On 2026-08-14, during the replacement-hotend discussion, I reported an ordered unit arriving with a "short" reading of **0.09 Ω**.
+
+The latter report does not specify whether the measurement was across the thermistor, heater or another part, whether it was disconnected, or the meter range/lead contribution. It is preserved as a reported reading and fault description, not a confirmed diagnosis of a shorted thermistor or controller input.
+
+### Replacement and verification
+
+Between those reports, on 2026-08-09, I reported a new OEM hotend plus silicone sock and said that it seemed to print okay. That establishes a replacement and an initial print observation. It does not establish a permanent thermal repair: extrusion problems followed that day, and the later delivered-unit fault had no documented resolution.
+
+### Remaining limitations
+
+No exact final replacement model, sensor curve, new PID/Z-offset record or concluding print test was supplied. The order relative to the separate [LeviQ hotend replacement](#leakage-tightening-and-a-further-hotend-replacement) is not established. Candidate cartridge-sensor hotends remained comparison material; see [Hardware.md](./Hardware.md#upgrade-candidates-not-installed-hardware).
+
+## Historical bed-heater section-name error
+
+The earlier heater setup returned `Section 'heated_bed' is not a valid config section`. The subsequent report confirmed both heaters PID-calibrated, and the supplied `bed.cfg` uses `[heater_bed]`. This was a historical configuration-loading error, separate from the thermistor header mismatch below; it is not present in the published file.
+
 ## Bed thermistor connected to TH1
 
 ### Symptoms
@@ -453,6 +479,37 @@ After moving the connector:
 
 - Bed temperature showed a plausible room-temperature value
 - Bed heating and PID calibration worked
+
+</details>
+
+---
+
+<details>
+<summary><h1>Extrusion and flow</h1></summary>
+
+## Intermittent extruder skipping and filament grinding
+
+**Status: unresolved; no confirmed mechanical or configuration cause.**
+
+### Symptoms
+
+On 2026-08-09 I described the original extruder as very dirty, possibly with worn gears. It could print normally and then stop feeding, skip and grind the filament until the print had to be cancelled. The earlier same-day report that the new OEM hotend seemed to print okay was therefore limited to initial operation.
+
+### Attempted changes and outcome
+
+I reported changing the nozzle and trying both higher and lower filament tension without eliminating the intermittent fault. Those actions did not isolate the cause. Gear wear, motor settings/microsteps, filament-path resistance and hotend restrictions were discussed, but no returned inspection or controlled test established one as the cause.
+
+### Remaining limitations
+
+No replacement extruder, motor-current change, cleaning result or permanent fix was confirmed. Product motor dimensions and shaft requirements were comparison material rather than a verified identification of the installed motor. The published extruder ratio, rotation distance and Pressure Advance remain unchanged.
+
+## Temperature loss during the max-flow trial
+
+**Status: thermal shutdown reported; sustained maximum flow not established.**
+
+In the 2026-08-02 Orca trial, output still looked acceptable at approximately **22 mm³/s**, but Klipper shut down because the hotend could not maintain temperature. I reported that no silicone sock was fitted and suspected that this contributed. The exact shutdown message, target temperature and a temperature trace were not supplied with that result.
+
+This was not a verified continuous-flow rating of 22 mm³/s or proof that the missing sock was the only cause. A sock was later reported with the OEM replacement, but no equivalent max-flow retest established the improvement. The associated PLA temperature/flow and inconclusive retraction observations are kept in [Journey.md](./Journey.md#tuning-and-hardware-upgrade-follow-up).
 
 </details>
 
@@ -489,6 +546,18 @@ USB operation was verified, but the reason for the missing `.cur` rename was not
 
 <details>
 <summary><h1>Raspberry Pi host</h1></summary>
+
+## Input Shaper dependency installation
+
+**Status: setup recovered sufficiently for calibration; exact installed package versions not captured.**
+
+On 2026-08-03 the attempted dependency installation returned:
+
+```text
+Error: Package 'libatlas-base-dev' has no installation candidate
+```
+
+The follow-up instructions omitted that unavailable package, retained `libopenblas-dev`, and offered an additional Python-environment installation only if imports still failed. I replied that it now returned OK; X and Y shaper-calibration logs followed. The record does not identify which fallback, if any, was needed or capture a complete package/version inventory. This documents the successful recovery, not a universal installation command or an assertion that every proposed step was executed.
 
 ## Klippy exited before creating its log
 

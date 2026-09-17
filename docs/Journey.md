@@ -26,10 +26,11 @@ Instead, it explains how the working conversion and subsequent investigations de
 | 5. Heating and fans | Could the original thermal hardware be retained? | Hotend, fans, bed thermistor and external MOSFET all worked |
 | 6. LeviQ | Could the original strain gauge work with Klipper? | Probe, reset and LED signals were identified and verified |
 | 7. First print | Would the assembled configuration produce a part? | First calibration cube printed successfully |
-| 8. Tuning | Could print quality be improved without changing hardware? | PID, extrusion and Pressure Advance were calibrated; Input Shaper remains pending |
+| 8. Tuning | Could print quality be improved without changing hardware? | PID, extrusion and Pressure Advance were calibrated; Input Shaper was pending at that stage and completed in the follow-up below |
 | 9. Documentation | How could the discoveries be preserved? | GitHub repository created with wiring, config and issue documentation |
 | Host/network follow-up | Was restored remote access durable? | Profile recovery verified, but later LAN/Wi-Fi outages remained unresolved |
 | LeviQ follow-up | Did early probe stability survive later tests? | Trigger shifts and Z homing reopened; tight warm single-point repeatability did not establish a complete fix |
+| Tuning/upgrade follow-up | What followed KAMP and the USB-hub wait? | X/Y shaper calibration, a nozzle cleaner and an OEM hotend/sock were reported; extrusion/thermistor faults remained open |
 
 ---
 
@@ -781,7 +782,7 @@ A USB hub was ordered so the Raspberry Pi Zero 2 W could communicate with both:
 - SKR 3 EZ
 - USB accelerometer
 
-Input Shaper is still pending in the current documentation snapshot.
+Input Shaper was pending at this stage. The [later tuning follow-up](#tuning-and-hardware-upgrade-follow-up) records the completed X/Y calibration without treating its results as a validated final print profile.
 
 ---
 
@@ -979,6 +980,44 @@ No electrical filter, rewiring, permanent driver change or new final calibration
 
 ---
 
+# Tuning and hardware-upgrade follow-up
+
+These dated events come from the tuning history and its hardware-upgrade branch in August 2026. Their relative order within that conversation is clear; their order against the separate, undated LeviQ/network follow-ups above is not. They add missing milestones without closing those investigations or identifying the latest cross-branch hotend.
+
+## PLA tuning and the high-flow limit, 2026-08-02 to 2026-08-03
+
+After reporting KAMP working well, I ran a 190–230 °C temperature tower and preferred the appearance at 210–215 °C. Orca's YOLO flow test gave approximately 0.985, compared with the earlier 0.98. These are reported trial results, not an exported final filament profile or a record of which temperature was ultimately selected.
+
+The max-flow trial still looked good around 22 mm³/s, but ended in a temperature-maintenance shutdown while no silicone sock was fitted. The missing sock was my suspected explanation, not a controlled diagnosis; [Issues.md](./Issues.md#temperature-loss-during-the-max-flow-trial) owns that limitation.
+
+The retraction tower was harder to interpret. Around 7–8 mm looked best, with under-extrusion beyond that, but I suspected wet PLA and could not make a confident selection. Drying, a definitive retraction value and the discussed VFA/cornering tests were not reported completed here.
+
+## Extensions and backups
+
+I reported downloading Klipper-Backup and TMC Autotune, then reported placing a config copy on the computer and GitHub and having Klipper-Backup run frequently. This records reported backup activity, not a tested restore or identification of that GitHub copy with the supplied ZIP. No completed TMC Autotune configuration or resulting motor changes were returned; the snapshot still comments out its include.
+
+## USB hub and X/Y Input Shaper, 2026-08-03
+
+The hub arrived and I reported it working, with the Mellow FLY ADXL345 taped firmly to the printhead and enough cable slack across X travel. An unavailable dependency package initially blocked setup. After the revised instructions I reported OK, then supplied separate X and Y calibration logs.
+
+The logs recommended MZV at 59.2 Hz for X and 26.6 Hz for Y. They establish completed analysis, including both values in the final Y output. The full results and the distinction between smoothing estimates, saved configuration and tested printing limits are kept in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
+
+I explicitly said I had not yet test-printed immediately after calibration. A later "it works" reply followed the cleaner discussion, and referred to Input Shaper as calibrated; it did not provide a before/after ringing comparison or a captured final saved cfg. The later OEM-hotend print report did not supply that comparison either.
+
+## Bed-mounted nozzle cleaner, 2026-08-03
+
+I mounted a spare BBL cleaner outside the printable area and supplied its approximate position. A macro with temporary X-sweep acceleration and restoration afterward was discussed; the next reply reported that it worked. This records initial operation, not confirmation of every suggested macro default or the full start sequence. [Hardware.md](./Hardware.md#bed-mounted-nozzle-cleaner) owns the physical coordinates and their limits; the published macros contain no cleaner implementation.
+
+## From upgrade ideas to recurring faults, 2026-08-03 to 2026-08-14
+
+I moved the discussion toward hardware upgrades while tuning continued in other branches. Direct drive with the original extruder, Revo and Stealthburner were considered, with particular interest in retaining LeviQ and understanding the cost of extra X mass. No conversion was confirmed.
+
+On 2026-08-07 a thermistor problem and an impractical repair attempt made hotend replacement the immediate concern. On 2026-08-09 I reported a new OEM hotend with a silicone sock that seemed to print okay. Later that day I described intermittent skipping and filament grinding despite a nozzle change and tension adjustments. Suspected worn extruder gears remained a hypothesis, and the alternative extruders/motors were not reported installed.
+
+On 2026-08-14 I reported an ordered unit arriving with a 0.09 Ω "short", without the measurement details needed to identify the failed part. The discussion then compared more serviceable replacement hotends and cartridge thermistors. The assistant's preference moved from the preassembled HOCENWAY option to Super Print's bi-metal option after I clarified PLA, PETG and possibly TPU as the intended materials. That recommendation was not a purchase decision or completed installation. The supplied listing specifications and the unconfirmed alternatives are separated from installed hardware in [Hardware.md](./Hardware.md#upgrade-candidates-not-installed-hardware).
+
+---
+
 # 15. Current project status
 
 ## Verified
@@ -1002,17 +1041,24 @@ These are established hardware and build milestones. Later probing failures limi
 - PID calibration for the earlier hardware setup
 - Extruder calibration
 - Pressure Advance
-- Successful test prints
+- Successful test prints in earlier setups; an initial OEM-hotend print reported on 2026-08-09
+- USB hub/accelerometer operation during X/Y shaper calibration
+- Completed X/Y shaper analysis; final saved cfg and comparative print outcome not captured
+- Bed-mounted nozzle cleaner with initial operation reported, final implementation not captured
 
 ## Pending
 
-- Mellow FLY ADXL345 USB integration
-- Input Shaper
+- Final saved Input Shaper/accelerometer configuration and comparative print validation
+- Final nozzle-cleaner/start-sequence version
 - Filament runout sensor configuration
 - Final documentation photographs
 - Raspberry Pi and USB-hub enclosure
 - Long-term speed and flow tuning
 - Full start-to-finish how-to guide
+
+## Unresolved extrusion and hotend issues
+
+The upgrade branch reported intermittent skipping/grinding after the initially successful OEM-hotend replacement, followed by a faulty delivered-unit report. No final cause, chosen upgrade or calibrated replacement closes those reports. Neither the max-flow trial nor the inconclusive retraction tower establishes a final filament profile. These findings supplement the separate LeviQ investigation below.
 
 ## Unresolved LeviQ issue
 
