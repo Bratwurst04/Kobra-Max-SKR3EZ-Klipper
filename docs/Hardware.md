@@ -219,7 +219,8 @@ The original X harness also carries:
 - Bowden extruder motor
 - X endstop
 - Filament runout sensor
-- Chassis-ground wire
+
+A separate wire bonds the X gantry to the chassis; it is not another motor or endstop pin in the X connector.
 
 This combined harness was one of the most confusing parts of the conversion because all conductors are black.
 
@@ -283,7 +284,7 @@ Repeated hard shutdowns were followed by a host failure where:
 - SSH returned `Connection refused`
 - Moonraker and Mainsail were unavailable
 
-The host installation was re-created afterward.
+The host installation was re-created afterward. The sequence supports a power-loss concern, but no filesystem diagnosis established corruption as the cause. The earlier responding IP address was also not conclusively identified as this Pi.
 
 The Pi should be shut down cleanly before removing power:
 
@@ -292,6 +293,14 @@ sudo poweroff
 ```
 
 A future power arrangement should allow the Pi to shut down safely or remain powered while the printer electronics are cycled.
+
+## Network history and verification limits
+
+Raspberry Pi OS Lite remained the operating system through the reinstallations; the earlier `3dHostOS` name was a hostname, not a different OS distribution. A later local login screen showed Debian GNU/Linux 13.
+
+The built-in Wi-Fi was managed by NetworkManager. Recreating a connection profile restored access and autoconnect worked in the reported retest, but substantial latency and complete access outages later returned. An IoT-to-main-network change and disabling Wi-Fi power saving did not produce a durable fix.
+
+The host and USB-connected controller remain the hardware described here. No replacement Wi-Fi adapter, wired host network connection or changed power arrangement was confirmed as a final solution. Details and measurement limits are recorded in [Issues.md](./Issues.md#recurring-network-latency-and-loss-of-access).
 
 ## USB connections
 
@@ -530,7 +539,16 @@ The bed system has been verified through:
 
 The original 24 V printer power supply is retained.
 
-The exact PSU model and label data are not currently documented in this repository.
+The original PSU-label photograph from the build identifies:
+
+| Label field | Printed value |
+|---|---|
+| Manufacturer | MOSO |
+| Model | `MS-TB100J240-500C0` |
+| Input | 100–240 V AC, 50/60 Hz, 6 A max. |
+| Output | 24.0 V DC, 21.0 A, 504.0 W |
+
+These are nameplate ratings, not measured printer consumption or measured bed current. The early whole-printer power estimates did not establish the bed's current when fully powered. Retaining the existing external MOSFET avoided treating those estimates as approval to connect the bed directly to the SKR.
 
 ---
 

@@ -28,6 +28,28 @@ The configuration is split by function so that wiring, motion, heating, probing 
 
 The physical pin mapping is documented separately in [Wiring.md](../Wiring.md).
 
+## Published snapshot and host state
+
+The cfg files preserve a machine-specific reference, not a self-contained, immediately runnable installation. A static review of this supplied snapshot found the following distinctions:
+
+| Area | What is actually in the snapshot | Documentation consequence |
+|---|---|---|
+| MCU identity | `printer.cfg` contains a placeholder serial path | The working USB identity from the build must be supplied locally |
+| Mainsail include | `[include mainsail.cfg]` is active, but that file is not bundled here | It belongs to the host-side installation |
+| KAMP | The include in `printer.cfg` is commented out; `KAMP_Settings.cfg` references an external `KAMP/` directory not present here | Verified KAMP use on the machine is not the same as KAMP being enabled by this snapshot |
+| Start macro | `PRINT_START` calls `SMART_PARK` and `LINE_PURGE` | Those commands depend on the matching external KAMP setup being available |
+| Probe offset | `leviq_probe.cfg` contains only `#z_offset: 0`; no generated offset block is included | The distributed files do not supply the required effective probe offset |
+| Heater PID | Numeric PID values remain in `steppers.cfg` and `bed.cfg`, labelled as starting values | They are not absent, and are not a substitute for the machine's own calibration |
+| Optional extensions | TMC Autotune is commented out and its cfg is not bundled | Earlier installed extension files are not part of this self-contained snapshot |
+
+The required `z_offset` is confirmed by the [upstream probe reference](https://www.klipper3d.org/Config_Reference.html#probe), checked during this documentation review. No cfg file was changed and no startup test of the distributed snapshot was performed as part of this update.
+
+### Host startup versus printer configuration
+
+The early `ModuleNotFoundError: No module named 'greenlet'` occurred in `/home/admin/klippy-env/bin/python` before Klippy could process the configuration. Restoring the host's Python dependencies resolved that reported startup failure; changing MCU pins or rebuilding the SKR firmware was not the repair. See [the recorded issue](../Issues.md#klippy-exited-before-creating-its-log).
+
+Wi-Fi profiles, autoconnect settings and power-saving settings are host/network configuration, not `printer.cfg` settings. Their later unresolved history is documented in [Issues.md](../Issues.md#recurring-network-latency-and-loss-of-access); no working NetworkManager profile or `moonraker.conf` is included in this cfg snapshot.
+
 ---
 
 <details>
@@ -143,7 +165,7 @@ This block may contain:
 - Bed-mesh profiles
 - Other saved calibration data
 
-The generated block was removed from the repository so another printer does not inherit calibration values from this machine.
+The generated block was removed from the repository so another printer does not inherit calibration values from this machine. This does not remove all numeric calibration-related settings: heater PID starting values remain in the ordinary sections, as detailed below. The omitted probe offset also means the published files alone lack a required value.
 
 Run the required calibrations and use:
 
@@ -185,6 +207,8 @@ max_z_accel: 100
 ```
 
 They are working values for this machine, not *guaranteed* limits for another printer.
+
+The first X-only bring-up attempt with `kinematics: cartesian` failed because complete X/Y/Z sections were required. The subsequent early test log used 16 microsteps for X/Y, X/Y travel limits of 400, and a temporary `PC0` Z-endstop entry while homing was postponed. Those historical settings do not replace the later values in the published `steppers.cfg`, including its LeviQ virtual endstop.
 
 
 ## `steppers.cfg`
@@ -252,7 +276,7 @@ These are Klipper safety limits, not normal operating temperatures.
 
 This file defines the four EZ2209 UART connections and their current settings.
 
-The current values are conservative working values, not universal recommendations:
+The current values are machine-specific working values, not universal recommendations or independently verified motor-current ratings:
 
 ```ini
 run_current: 0.70
@@ -267,6 +291,8 @@ hold_current: 0.40
 ```
 
 Verify motor temperatures and tune currents for the actual motors and mechanical load.
+
+The early test log used `run_current: 0.80` for X/Y and `0.90` for Z with `stealthchop_threshold: 999999`. The published file instead uses `stealthchop_threshold: 0` and the values above. This update preserves the published settings rather than restoring the earlier test configuration. The single Z-driver entry controls both parallel outputs; it does not provide independently adjustable current or direction for each Z motor.
 
 The configured UART pins are verified for the current SKR layout:
 
@@ -300,7 +326,15 @@ The configured maximum is intended as a fault cutoff, not a target temperature.
 
 As with the extruder, `min_temp: 18` may be unsuitable in a cold environment.
 
-PID values are not included in the repository as they are printer specific. Run bed PID calibration and save your own result.
+The file contains PID starting values, despite the earlier documentation saying they were absent:
+
+```ini
+pid_Kp: 70
+pid_Ki: 1
+pid_Kd: 1000
+```
+
+Likewise, `steppers.cfg` contains extruder PID starting values `33.01`, `3.25` and `83.84` for Kp, Ki and Kd. Both files label these values as machine-specific starting values. The removed generated calibration block does not make these ordinary-section values disappear or prove them to be the final live calibration.
 
 
 ## `fans.cfg`
@@ -310,12 +344,14 @@ This file defines:
 - Part-cooling fan on `PB7`
 - Hotend fan on `PB6`
 
-The current values are:
+The part-cooling `[fan]` section currently uses:
 
 ```ini
 kick_start_time: 0.5
 off_below: 0.10
 ```
+
+Both configured fans use `kick_start_time: 0.5`; `off_below: 0.10` is explicitly set only for the part-cooling fan.
 
 They work on this machine but can be adjusted if a fan:
 
@@ -428,11 +464,13 @@ It provides a visible indication that Klipper is running when no physical screen
 
 ## `KAMP_Settings.cfg`
 
-This file enables:
+When included, this file enables the external KAMP components for:
 
 - Adaptive meshing
 - Adaptive line purge
 - Smart Park
+
+The supplied `printer.cfg` currently comments out that include. The external component files are not bundled in this directory; see [snapshot limitations](#published-snapshot-and-host-state).
 
 The settings are working values for the current printable area.
 

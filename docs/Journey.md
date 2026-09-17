@@ -28,6 +28,7 @@ Instead, it explains how the final solution was discovered, including wrong assu
 | 7. First print | Would the assembled configuration produce a part? | First calibration cube printed successfully |
 | 8. Tuning | Could print quality be improved without changing hardware? | PID, extrusion and Pressure Advance were calibrated; Input Shaper remains pending |
 | 9. Documentation | How could the discoveries be preserved? | GitHub repository created with wiring, config and issue documentation |
+| Host/network follow-up | Was restored remote access durable? | Profile recovery verified, but later LAN/Wi-Fi outages remained unresolved |
 
 ---
 
@@ -68,6 +69,8 @@ Several initial assumptions later changed:
 
 These corrections became the main reason to document the conversion rather than publish only the final cfg files.
 
+The early external-MOSFET discussion included whole-printer power estimates and an incorrect first reading of the photos as showing no separate board. The user identified the existing `CONTROL`/`HOTBED` board. No bed-only full-power current measurement was established by those power estimates; the retained external board is the configuration documented here.
+
 ---
 
 # 2. Inspecting the original electronics
@@ -105,7 +108,8 @@ The X harness, for example, carries:
 - Extruder motor
 - X endstop
 - Filament runout signal
-- Chassis grounding
+
+A separate bonding wire connects the chassis and X gantry; later physical tracing distinguished it from the populated X-connector pins.
 
 The E/toolhead harness carries:
 
@@ -222,7 +226,7 @@ The Raspberry Pi Zero 2 W was installed with:
 - Moonraker
 - Mainsail
 
-The Pi hostname changed during reinstallations, but the hostname itself has no effect on printer functionality.
+The Pi hostname changed during reinstallations. The user clarified that `3dHostOS` had been a hostname and that the OS had always been Raspberry Pi OS Lite. Hostnames affected how the host was reached over the network, not the printer's wiring or MCU pin assignments.
 
 ## Missing Python dependency
 
@@ -232,9 +236,11 @@ Klipper initially failed to start with:
 ModuleNotFoundError: No module named 'greenlet'
 ```
 
-Reinstalling the Klipper Python requirements into the Klipper virtual environment fixed the service.
+The service was auto-restarting before `klippy.log` was created. The system journal showed the failed import from `reactor.py` in the Python environment used by the service.
 
-This was separate from the printer wiring and firmware.
+Restoring the Klipper Python dependencies was followed by the user's confirmation that the host connection worked. The instructions offered both the requirements file and a direct-package fallback; the exact branch taken was not reported. This was separate from printer wiring and MCU firmware.
+
+Update Manager had also shown `INVALID` entries. A refresh displayed ordinary installed/update versions before the missing-module diagnosis; no Git repair was established by that change. The detailed host issue is in [Issues.md](./Issues.md#klippy-exited-before-creating-its-log).
 
 ## Hard shutdown failure
 
@@ -249,7 +255,7 @@ After several cycles:
 - Moonraker was unreachable
 - Mainsail was unreachable
 
-The host installation was re-created.
+The host installation was re-created and access returned. Corruption was suspected, not diagnosed by a filesystem check. The old responding IP was not conclusively tied to the Pi's later-observed WLAN MAC address, so the ping replies did not settle device identity either.
 
 This became an important lesson:
 
@@ -314,7 +320,9 @@ The Raspberry Pi also detected:
 usb-Klipper_stm32h723xx_...
 ```
 
-This proved that Klipper firmware was running even though the SD-card filename did not provide the expected confirmation.
+Later MCU communication in the uploaded `klippy.log` confirmed running `stm32h723xx` Klipper firmware, so the SD-card filename had not been a reliable indication of failure.
+
+The Windows partition screenshot showed a small FAT `RECOVERY` partition before the FAT32 firmware volume. The user could not remove it in the attempted workflow. This was a possible SD-bootloader compatibility issue, not a confirmed cause. SWD and DFU were discussed but no repair through either was documented. See [the firmware issue](./Issues.md#firmware-identification-and-sd-card-update-ambiguity).
 
 ## MCU serial path
 
@@ -324,7 +332,7 @@ Klipper required the complete path:
 /dev/serial/by-id/usb-Klipper_stm32h723xx_<complete-id>-if00
 ```
 
-Using a shortened example path caused MCU connection failure.
+The initial `printer.cfg` still contained a placeholder serial path. It was replaced with the full detected identifier. A separate missing Python dependency still prevented Klippy from starting, so the early disconnected state was not attributable to the placeholder alone.
 
 This reinforced another documentation rule:
 
@@ -356,7 +364,13 @@ This made it easier to isolate errors without searching through one large file.
 
 When `kinematics: cartesian` was enabled, Klipper required complete X, Y and Z stepper sections.
 
-It was not possible to configure only X and postpone Y/Z while keeping Cartesian kinematics active.
+It was not possible to configure only X and postpone Y/Z while keeping Cartesian kinematics active. The reported error was:
+
+```text
+Option 'endstop_pin' in section 'stepper_y' must be specified
+```
+
+The early motor-test configuration supplied the missing axis sections and temporarily referenced `PC0` for Z with no working Z sensor. That was a configuration-loading stage with homing explicitly postponed, not the later verified LeviQ homing setup.
 
 ## TMC UART verification
 
@@ -381,9 +395,9 @@ That distinction became important during later faults.
 
 X passed `STEPPER_BUZZ`, while Y and Z initially caused Klipper shutdowns or failed to move.
 
-The motor coil groups had been interpreted incorrectly.
+The user later found that the physical wire destinations had been identified incorrectly. The uploaded log captured Y `s2vsb=1(ShortToSupply_B!)` and `ola=1(OpenLoad_A!)`; it did not by itself prove which wire was wrong.
 
-TMC UART still worked, which made the fault appear more complicated than it was.
+After an intermediate change, Y stopped shutting down but remained motionless. A further retrace was followed by the user's confirmation that both X and Y now buzzed. TMC UART had worked throughout, which made the fault appear more complicated than it was.
 
 The final rule was simple:
 
@@ -860,6 +874,34 @@ This separation prevents one document from becoming a mixture of:
 
 ---
 
+# Host and network follow-up from this chat branch
+
+These host events overlapped motor bring-up and continued in later network troubleshooting. Their exact order relative to the heating, LeviQ and tuning work already documented from other branches is not established. They supplement that history rather than undoing those verified printer milestones.
+
+## Profile recovery after reinstallation
+
+After access returned following the host reinstall, a later startup again left the Pi unreachable. Local screen/keyboard access worked. NetworkManager reported `wlan0` disconnected and listed only loopback among connection profiles; WLAN was not blocked by `rfkill`.
+
+The initial explanation blamed `[ifupdown] managed=false`, but that was not demonstrated as the cause. Creating/activating a Wi-Fi profile with `nmcli` restored the connection, and the user confirmed autoconnect working in the next reported check. This established a recovery, not why the earlier profile was absent from the listing.
+
+## Latency persisted after access returned
+
+Later tests showed hundreds of milliseconds of average gateway latency, several-second peaks and intermittent packet loss. Disabling Wi-Fi power saving and changing from the IoT SSID to the main SSID did not produce a lasting solution.
+
+At the sampled times, CPU and memory use were modest, RSSI was around -50 to -55 dBm, and local self-pings were fast. These observations narrowed the investigation but did not clear every host, power or radio component.
+
+## Other LAN traffic was affected too
+
+The Windows PC, described as Ethernet-connected, also experienced packet loss and multi-second delays to the Internet and local gateway. This broadened the investigation beyond the printer's software. The exact PC-to-gateway path, including any wireless mesh segment, was not established.
+
+The Pi sometimes became reachable again without intervention, then lost access again later. A subsequent local login screen still showed an IP while access failed, and `ip neigh` entries were reported as `STALE`. That state did not prove a broken neighbour table.
+
+## Last supported outcome
+
+The profile-recovery milestone remains valid, but long-term network reliability was **unresolved / reopened** at the end of the available network discussion. No returned hotspot comparison, definitive outage journal or confirmed Deco change established a permanent fix. The measured results and limits are owned by [Issues.md](./Issues.md#recurring-network-latency-and-loss-of-access).
+
+---
+
 # 15. Current project status
 
 ## Verified
@@ -892,6 +934,10 @@ This separation prevents one document from becoming a mixture of:
 - Raspberry Pi and USB-hub enclosure
 - Long-term speed and flow tuning
 - Full start-to-finish how-to guide
+
+## Unresolved host/network issue
+
+Later remote-access outages remain unclosed in this branch. Working USB MCU communication and the successful printer tests above do not constitute a long-term Wi-Fi/LAN reliability test.
 
 ---
 
