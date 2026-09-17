@@ -8,7 +8,7 @@ It is not a replacement for:
 - [Configuration documentation](./config/config.md)
 - [Issues and troubleshooting](./Issues.md)
 
-Instead, it explains how the final solution was discovered, including wrong assumptions, failed approaches and the tests that changed the direction of the project.
+Instead, it explains how the working conversion and subsequent investigations developed, including wrong assumptions, failed approaches and the tests that changed the direction of the project.
 
 > [!NOTE]
 > This journey is reconstructed from the build notes and troubleshooting history.
@@ -29,6 +29,7 @@ Instead, it explains how the final solution was discovered, including wrong assu
 | 8. Tuning | Could print quality be improved without changing hardware? | PID, extrusion and Pressure Advance were calibrated; Input Shaper remains pending |
 | 9. Documentation | How could the discoveries be preserved? | GitHub repository created with wiring, config and issue documentation |
 | Host/network follow-up | Was restored remote access durable? | Profile recovery verified, but later LAN/Wi-Fi outages remained unresolved |
+| LeviQ follow-up | Did early probe stability survive later tests? | Trigger shifts and Z homing reopened; tight warm single-point repeatability did not establish a complete fix |
 
 ---
 
@@ -62,7 +63,7 @@ Several initial assumptions later changed:
 |---|---|
 | A fifth stepper driver might be required for dual Z | Both Z motors use one driver and two parallel outputs |
 | A new bed MOSFET might be required | The original printer already had an external MOSFET |
-| The original strain gauge might need replacement | The original LeviQ works after identifying probe and reset signals |
+| The original strain gauge might need replacement | The original LeviQ worked in initial tests after identifying probe/reset signals; later reliability was reopened |
 | `SCL` and `SDA` probably formed an I²C bus | They function as probe output and reset in this build |
 | SKR 3 EZ probably used STM32H743 | The physical board uses STM32H723 |
 | The X connector only carried X-axis functions | It also carries the Bowden extruder motor and other signals |
@@ -664,6 +665,8 @@ Instead:
 3. Use bed mesh for repeatable remaining geometry
 4. Avoid using mesh to hide unstable or random probe behavior
 
+These were the conclusions at that stage. Later tests reopened the reliability assumption; the [LeviQ follow-up](#leviq-follow-up-from-this-troubleshooting-branch) preserves that recurrence rather than replacing the early successful results.
+
 ---
 
 # 11. First print
@@ -902,25 +905,101 @@ The profile-recovery milestone remains valid, but long-term network reliability 
 
 ---
 
+# LeviQ follow-up from this troubleshooting branch
+
+This investigation followed the earlier successful probing and printing milestones, but its exact calendar dates and its order relative to the separate host/network follow-up are not established. It reopens probe reliability without undoing the verified wiring or replacing the other branch's current status.
+
+The detailed measurements and their limitations are kept in [Issues.md](./Issues.md#intermittent-trigger-shifts-after-the-initial-fixes). The history below records how the interpretation changed.
+
+## Earlier stability did not last
+
+The opening handover already described repeatability as good as roughly 0.0075–0.02 mm in some runs, alongside intermittent shifts of tenths of a millimetre and sometimes more than a millimetre. The same problem could occur with the Bowden completely disconnected.
+
+Longer or repeated reset sequences, slower motion, different retract distances, alternating start heights and a 30-second passive wait had not eliminated it. Several consecutive nozzle contacts sometimes brought a point back toward a repeatable value. Moving local wires, slightly tightening load-cell screws and removing the sock had produced an improvement that did not last.
+
+That was the starting point for this branch, not evidence that the original reset and cover-clearance fixes had never worked.
+
+## Contact history appeared important
+
+The first comparisons used A at X208 Y223 and B at X223.025 Y211.366. Visiting A without contact did not reproduce the shift that followed an actual probe at A.
+
+The returned C-to-B test kept Y unchanged, and a D-to-B test kept X unchanged. Both could disturb the following B result. Repeating the Y comparison on the opposite side of B still gave negative shifts rather than a reliable reversal of direction. A reset-only visit to C did not reproduce the large change.
+
+At this stage mechanical conditioning, stick-slip and changes in the load-cell force path became leading hypotheses. They were not proven causes: an actual probe also changes Z movement and timing, and the D baselines were still converging. Later events at the same XY point showed that visiting a different point was not necessary for the fault.
+
+## Manual loading narrowed the questions, not the component
+
+A first finger press on the bed was followed by a changed B value, but B had not settled beforehand. In a later no-touch versus finger comparison, both excursions changed the next reading by the same 0.01250 mm relative to the preceding contact. The large bed-only effect was not reproduced.
+
+An upward load on the nozzle without bed contact shifted the next reading more than a separate load on the rigid carriage/body. That kept the local hotend/load-cell assembly under suspicion, but the forces were not calibrated and these were not repeated isolation experiments. A further proposed test directly on the moving load-cell mount was not reported as completed.
+
+## A leaking hotend was not the whole explanation
+
+I reported leakage at the nozzle and near the heatbreak and tightened the nozzle. The investigation then focused heavily on that joint. However, separate X200 Y200 contacts starting from Z2 still switched between very different trigger coordinates, and large changes also occurred before I had performed the proposed additional manual nozzle push.
+
+I subsequently replaced the hotend again. Probing still failed with repeated tolerance retries, including a span of nearly a millimetre at X208 Y223. The replacement was a real hardware change, but the expected complete fix did not follow. Its exact model and final calibration were not documented in this branch.
+
+## Motor-related flicker reopened the electrical question
+
+After removing the cover, I could no longer home Z reliably and noticed indicator flicker during Z movement. I clarified that the LeviQ electronics were still mounted: it was the cover and associated parts that were off, not the entire electrically connected printhead removed from the machine.
+
+The first suspicion was interference from the motors. `STEPPER_BUZZ` produced a blink on X and Z, mostly at the initial kick, but not on Y. Ordinary X moves remained quiet on the indicator even with high requested acceleration. A substantial manual Z jerk could also produce a blink. Enabling X, Y or Z without movement produced none.
+
+These observations did not confirm EMI or a motor-enable fault. No motor-disconnected or mechanically decoupled comparison, changed-current result or electrical waveform was returned. Both mechanical excitation and electrical interference remained possible.
+
+## A speed-associated symptom became reproducible
+
+Controlled Z movements gave a clearer pattern: low speeds and 3–4 mm/s produced no reported flicker, 5 mm/s produced strong flicker during motion, and 6–8 mm/s mainly produced blinks at starts or stops.
+
+A resonance-like explanation became plausible. It remained an explanation, not a measured resonance or proof that electronics were uninvolved. The dashboard's global acceleration setting also did not establish the actual Z motion profile.
+
+The 5 mm/s value was especially relevant because the published probe lift, safe-home hop and first Z-homing speeds all used it. Slow 2 mm/s external Z moves and probe lifts were then used in the returned diagnostic logs. Temporary debug positioning and alternative homing settings had been discussed, but no complete final homing configuration or successful final home was supplied.
+
+## The cleaner retract comparison contradicted the attractive explanation
+
+The first 2 versus 5 mm/s comparison appeared to link a fast lift to a later bad reading. It also changed the external return-to-Z2 speed, so the retract was not the only changed movement.
+
+A cleaner test held those external moves at 2 mm/s. Four fast-retract/readout pairs did not show large following shifts, while a large outlier occurred in the slow-lift part of the same log. The evidence therefore did not support calling the 5 mm/s symptom the single cause of the intermittent coordinate errors.
+
+This preserved two separate findings: visible motion-associated flicker, and unreliable trigger coordinates that could also occur during slow-lift testing.
+
+## Cold probing, possible filament and a very stable warm run
+
+I then clarified that the recent tests were cold and that some filament might remain on the nozzle. A clean, unloaded nozzle was not confirmed by a returned comparison.
+
+The final returned series was at a reported 220 °C nozzle and 50 °C bed. Ten independent contacts at X200 Y200, each starting from Z2 with 0.5 mm/s probing and 2 mm/s lift, had a total range of **0.00875 mm** around a mean of **-1.390875 mm**. All ten readings were included, not only the last few after conditioning.
+
+That was a verified single-point repeatability result. It did not establish an accurate absolute Z value or a thermal shift relative to the earlier cold runs: an unchanged reference across those sessions, nozzle cleanliness and a controlled temperature-return cycle were not established.
+
+## Last supported outcome
+
+The original LeviQ remained installed. A further hotend replacement had not eliminated the fault, and the exact mechanical or electrical cause remained unresolved. The last warm series demonstrated that the system could still be very repeatable under one set of conditions, but no final homing, multi-point mesh or print result closed the investigation.
+
+No electrical filter, rewiring, permanent driver change or new final calibration is recorded as completed. The diagnostic parameters in the console logs are not a replacement for the [published cfg snapshot](./config/config.md#later-leviq-diagnostics-versus-this-snapshot).
+
+---
+
 # 15. Current project status
 
 ## Verified
+
+These are established hardware and build milestones. Later probing failures limit the homing/mesh milestones as noted below; they are not all claims of current end-to-end reliability.
 
 - SKR 3 EZ with STM32H723
 - Four EZ2209 drivers using UART
 - X/Y/Z and extruder motion
 - Original X/Y endstops
-- Original LeviQ probe
-- LeviQ reset
-- Z homing
-- Hotend
+- Original LeviQ signal identification
+- LeviQ reset function and early improvement
+- Z homing in the initial working setup; later reliability reopened
+- Earlier hotend operation; further replacement and missing final calibration documented
 - Heated bed
 - Original external MOSFET
 - Original fans
 - Toolhead LED
-- Bed mesh
-- KAMP adaptive mesh
-- PID calibration
+- Bed mesh in the initial working setup; later probe reliability reopened
+- KAMP adaptive-mesh integration; not a final post-investigation validation
+- PID calibration for the earlier hardware setup
 - Extruder calibration
 - Pressure Advance
 - Successful test prints
@@ -934,6 +1013,10 @@ The profile-recovery milestone remains valid, but long-term network reliability 
 - Raspberry Pi and USB-hub enclosure
 - Long-term speed and flow tuning
 - Full start-to-finish how-to guide
+
+## Unresolved LeviQ issue
+
+Intermittent trigger-coordinate shifts and later false-trigger/failed Z homing remain open. The 220/50 °C ten-contact result verifies single-point repeatability only. No confirmed electrical or mechanical root cause, final homing configuration, new mesh or successful concluding print was returned. Detailed evidence is in [Issues.md](./Issues.md#intermittent-trigger-shifts-after-the-initial-fixes).
 
 ## Unresolved host/network issue
 
@@ -979,6 +1062,8 @@ The LeviQ output was digital, but its behavior depended on:
 - Reset timing
 - Gantry geometry
 - Cable and Bowden forces
+
+Later investigation also recorded motion-speed-dependent indicator behavior and uncontrolled nozzle/temperature conditions. These did not establish a unique mechanical or electrical cause. A tight cluster at one point is a repeatability result, not proof of absolute accuracy or a permanent fix.
 
 ## Do not hot-plug connectors
 

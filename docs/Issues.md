@@ -14,7 +14,9 @@ The goal is not only to list the final fix, but also to preserve the symptoms th
 
 | Issue | Main symptom | Resolution |
 |---|---|---|
-| LeviQ not reset | Probe values drift or trigger before touching the bed | Pulse PB14 LOW then HIGH before every probe attempt |
+| LeviQ not reset, initial investigation | Probe values drift or trigger before touching the bed | PB14 reset improved early tests; later recurrence was not fully resolved |
+| [Intermittent LeviQ trigger shifts](#intermittent-trigger-shifts-after-the-initial-fixes) | Large same-point deviations mixed with very tight series | Unresolved / reopened; final warm single-point repeatability verified only |
+| [Z-motion-associated indicator flicker](#z-motion-associated-indicator-flicker-and-homing-failure) | Strong flicker near a requested 5 mm/s and unreliable Z homing | Speed association observed; mechanical versus electrical cause unconfirmed |
 | Printhead cover touching load cell | Random probe triggers | Increase clearance around the LeviQ load-cell screws |
 | Z motors fighting each other | Loud Z motion, barely moves in one direction | Reverse one coil pair on one Z motor |
 | Mixed motor and signal wires | TMC shutdown or motor does not move | Re-map the complete harness and preserve coil pairs |
@@ -42,9 +44,9 @@ The goal is not only to list the final fix, but also to preserve the symptoms th
 
 ### Cause
 
-The original LeviQ board requires its zero point to be reset before probing.
+The initial investigation identified missing reset as a contributor to drift. The probe output alone was functional, and introducing a reset improved the measurements.
 
-The probe output alone was functional, but without a reset the trigger point accumulated an offset between attempts.
+That result did not prove that every later offset was caused by missing reset. The recurrence and unsuccessful timing variants are documented below.
 
 ### Fix
 
@@ -61,7 +63,7 @@ This is executed from the probe `activate_gcode`.
 
 ### Verification
 
-After adding the reset pulse:
+In the initial tests after adding the reset pulse:
 
 - Z homing became reliable
 - Repeated probe measurements stabilized
@@ -71,6 +73,171 @@ Related configuration:
 
 - [`leviq_probe.cfg`](./config/leviq_probe.cfg)
 - [LeviQ wiring](./Wiring.md#leviq-strain-gauge-probe)
+
+## Intermittent trigger shifts after the initial fixes
+
+**Status: unresolved / reopened; machine-specific.** The signal mapping and the initial successful prints remain valid milestones. They did not establish lasting probe reliability.
+
+### Symptoms and evidence scope
+
+Later tests alternated between very tight repeated measurements and large trigger-coordinate changes at the **same XY point**. Reported errors included `Probe triggered prior to movement`, `Probe samples exceed tolerance. Retrying...` and `Probe samples exceed samples_tolerance`.
+
+The record below combines the opening troubleshooting handover with the subsequent pasted console logs and my physical-test reports. Clock times identify log excerpts, not calendar dates. The starting conditions were not identical across every session. Absolute Z values from different points, temperatures or homing sessions are not treated as a measurement of the same reference.
+
+Most isolated-contact tests used `SAMPLES=1`, `PROBE_SPEED=0.5`, `SAMPLE_RETRACT_DIST=1` and initially `LIFT_SPEED=5`. Later tests explicitly used `LIFT_SPEED=2`. A console result of `range 0.000000` for **one** sample says nothing about repeatability; the relevant ranges below are calculated across separate contacts.
+
+### What the opening handover had already tested
+
+| Investigation | Reported outcome | Limit on the conclusion |
+|---|---|---|
+| Bowden completely disconnected | Large errors still occurred | Bowden was not necessary for those failures; this does not describe every later test's assembly state |
+| Cover and toolhead connector manipulation | No reproducible trigger from pushing/twisting the cover or harness connector | No demonstrated gross connector fault; small preload or intermittent faults were not excluded |
+| Local mechanical changes | Moving heater/thermistor wires aside, very slight tightening of load-cell screws and removing the silicone sock were followed by a temporary improvement | Several things changed; recurrence prevented assigning a lasting fix to one of them |
+| Reset timing | A wait before reset, a longer LOW pulse, a double pulse, a 5 s post-reset wait, and one reset before an entire series did not eliminate the problem | The tested timing changes were not sufficient; unwanted electrical resets were not measured |
+| Probe speed | Slow probing could reach ranges of 0.0075–0.01125 mm, but large failures also returned at 0.5 mm/s | Good resolution in a stable state did not explain intermittent shifts |
+| Acceleration and retract | Reduced acceleration did not remove the fault; 1 mm retract could work well | Neither higher acceleration nor an insufficient retract distance was established as the sole cause |
+| Alternating start Z2 and Z0.7 at one point | Results progressed from about -0.2275 toward -0.1000 rather than forming two height-dependent groups | No consistent two-level start-height effect in that comparison |
+| Passive waiting | After 30 s without contact, the first measurement was about -0.3475; following contacts were around -0.135 | Waiting alone did not reproduce the improvement associated with repeated contacts |
+
+These were reported historical tests, not new settings applied to the published cfg files.
+
+### Contact-history comparisons
+
+The principal points were:
+
+| Label | X | Y |
+|---|---:|---:|
+| A | 208 | 223 |
+| B | 223.025 | 211.366 |
+| C | 208 | 211.366 |
+| D+ | 223.025 | 223 |
+| D- | 223.025 | 199.732 |
+
+In the opening handover, visiting A without probing it left B near its conditioned level, whereas probing A before returning to B produced B values of -0.30875, -0.22750 and -0.25000 mm after a baseline near -0.09125 mm. This was an A control, not a separate completed C-only control.
+
+The subsequent returned logs added these comparisons:
+
+| Test / log excerpt | B reference before the excursion | B after the other operation | Observation |
+|---|---|---|---|
+| C contact, 22:53–22:54 | Last three B contacts: -0.10000, -0.10250, -0.10000 | -0.21125, -0.19000, -0.20875 | Mean change -0.10250 mm; changing Y was not required |
+| C reset without contact, 22:58 | Last three: -0.09250, -0.09750, -0.09250 | -0.08250, -0.08875, -0.08750 | Mean change +0.00792 mm; the reset-only excursion did not reproduce the large negative shifts |
+| D+ contact, 23:01–23:02 | B was still progressing from -0.11750 to -0.08125 | -0.57875, -0.35250, -0.32750 | Large changes occurred without changing X |
+| D- contact, 23:04–23:05 | B was still progressing from -0.22625 to -0.10125 | -0.47875, -0.33500, -0.37500 | The other Y direction also produced negative shifts, not a consistent reversal of sign |
+
+The C reset-only sequence explicitly used LOW for 200 ms followed by HIGH and 700 ms waiting. The D baselines were still trending, so they are not represented as fully settled references. The D comparisons weakened a simple opposite-direction rocking explanation but did not exclude the bed or prove a particular toolhead component faulty.
+
+These results supported **history-dependent probing**, often described during the investigation as conditioning or hysteresis. A physical probe cycle also changes Z motion and timing compared with a no-contact visit. The comparisons therefore did not isolate contact force from every other part of the cycle, nor distinguish mechanical hysteresis from electronics responding to load or motion.
+
+### Manual load comparisons
+
+The forces and contact locations in these manual tests were not calibrated. The differences in this table use the **immediately preceding B measurement**, not averages across different sessions.
+
+| Operation / log excerpt | B before | B after | Change |
+|---|---:|---:|---:|
+| First bed-only finger pressure, 23:08–23:09 | -0.16375 | -0.22250 | -0.05875 mm |
+| Later no-touch excursion, 23:11 | -0.10750 | -0.12000 | -0.01250 mm |
+| Later bed-only finger pressure, 23:12 | -0.09625 | -0.10875 | -0.01250 mm |
+| Upward nozzle load without bed contact, 23:15–23:16 | -0.09625 | -0.17250 | -0.07625 mm |
+| Load on the rigid carriage/body instead, 23:18 | -0.11750 | -0.10625 | +0.01125 mm |
+
+The first bed test started from a visibly changing baseline. The later finger and no-touch excursions had the same last-reading difference, so they did not reproduce a large bed-only effect. The nozzle test shifted more than the carriage test, which kept the local hotend/load-cell force path under suspicion. These single manual comparisons did **not** clear the bed, carriage or electronics conclusively. A proposed direct load on the moving load-cell mount was not reported as completed.
+
+### Leakage, tightening and a further hotend replacement
+
+I reported leakage at the nozzle and up near the heatbreak, and tightened the nozzle. Later I replaced the hotend again, but the probing problem remained. The exact replacement model and any post-replacement PID or Z-offset calibration were not supplied in this branch. See [Hardware.md](./Hardware.md#further-replacement-during-leviq-diagnosis).
+
+Before that further replacement, a ten-contact run at X200 Y200 had a 1.99000 mm range, bracketed by much tighter runs at X208 Y223. Separate contacts that each started from Z2 then produced:
+
+```text
+-1.06125, -1.67125, -1.61500, -0.13500, -0.12125, -0.12625, -0.14375
+```
+
+The +1.48000 mm change between the third and fourth readings did not require chained start heights within one `SAMPLES=10` command. A later same-point series also changed from -0.13375 to -1.17125 without the proposed manual nozzle push having been performed. Other repeated-contact sequences gradually returned toward -0.10 mm.
+
+After the replacement, the X208 Y223 retry log still spanned +0.50875 to -0.44875 mm and ended in `Probe samples exceed samples_tolerance`. Heating targets of 210 °C nozzle and 50 °C bed were shown, but the excerpt did not establish a completed temperature soak or the exact live sampling configuration.
+
+The old leaking hotend could have contributed to earlier behavior, but replacing it did not remove the observed problem. A trigger-coordinate difference is not, on its own, a measurement of physical hotend play or proof that the nozzle moved through the bed by that amount.
+
+## Z-motion-associated indicator flicker and homing failure
+
+**Status: speed-associated visual symptom observed; mechanical or electrical cause unresolved.**
+
+After removing the cover, I clarified that the LeviQ electronics were still installed. This was not a test with a detached, electrically isolated printhead. During the upward Z movement associated with homing, the indicator flickered. I reported an apparent immediate first homing trigger, followed by an unreliable slow pass that could finish without a trigger. The exact final error text was not included in that report.
+
+### Comparisons actually reported
+
+| Test | Observation |
+|---|---|
+| Gentle manual Z-belt movement | No blink |
+| A substantial manual Z jerk | Could produce a blink |
+| `STEPPER_BUZZ` on X and Z | A blink mainly at the initial kick |
+| `STEPPER_BUZZ` on Y | No observed blink |
+| The supplied normal X moves with acceleration settings up to 10000 mm/s² | No observed blink; a separate much harsher X movement was thought to involve Bowden drag |
+| `SET_STEPPER_ENABLE` alone on X, Y and Z | No observed blink |
+| Controlled Z speed comparisons | Strong dependence on the requested Z speed, as below |
+
+| Requested Z speed | Reported indicator behavior |
+|---|---|
+| 0.5, 1 and 2 mm/s | No flicker |
+| 3 and 4 mm/s | No flicker |
+| 5 mm/s | Strong flicker during movement |
+| 6 mm/s | Blink at start/stop, not during steady movement |
+| 7 mm/s | Blink mainly when stopping after downward movement |
+| 8 mm/s | Blink at start/stop |
+
+This is consistent with a speed-dependent excitation, including a possible resonance, but it is **not a verified mechanical-resonance diagnosis**. Speed-dependent electrical interference was not excluded. LED observations were not accompanied by captured PB15, PB14 or supply waveforms, or force/vibration measurements.
+
+The absence of a blink from enable alone weakened an enable-only explanation. The `STEPPER_BUZZ` blink did not independently establish EMI. No completed motor-disconnected, mechanically decoupled motor, motor-current A/B, separate-supply or signal-filter comparison was returned. Those remained proposals, not verified wiring changes or fixes.
+
+The dashboard acceleration value was not a measurement of actual Z acceleration. Published Z limits and the distinction from runtime test commands are recorded in [Configuration](./config/config.md#later-leviq-diagnostics-versus-this-snapshot).
+
+## Retract-speed control did not establish a complete fix
+
+**Status: 2 mm/s used in later diagnostic logs; prevention of all trigger shifts not verified.**
+
+In the first cold comparison at 21:52–21:54, the 2 mm/s-lift series began at -0.30750 mm before seven much tighter readings. The 5 mm/s group then contained -0.07375, -0.21000, -0.06500, -0.07125 and -0.07500 mm. This looked suggestive, but the supplied comparison also changed the external return-to-Z2 feedrate from F120 to F300. It did not isolate the automatic retract alone.
+
+The cleaner follow-up kept the external Z2 moves at F120 and compared a probe followed by a 5 mm/s retract with the **next** reading, whose own retract used 2 mm/s. Four returned pairs were:
+
+| Reading before the 5 mm/s retract | Next reading | Change |
+|---:|---:|---:|
+| -0.07000 | -0.06625 | +0.00375 mm |
+| -0.07250 | -0.07250 | 0.00000 mm |
+| -0.07500 | -0.07500 | 0.00000 mm |
+| -0.07750 | -0.08000 | -0.00250 mm |
+
+Those four exposures did not reproduce a large next-reading shift. The same log contained -0.09375 → -0.54750 → -0.06750 mm in the slow-lift sequence before those pairs. A 2 mm/s lift was therefore not sufficient to prevent every large deviation.
+
+The distinction is important: an indicator can react **during movement** without that movement demonstrably causing a persistent error in the **next contact measurement**. The record supports avoiding a problematic test speed during diagnosis, but not declaring the entire intermittent fault solved by changing `lift_speed`.
+
+## Cold nozzle condition and the final warm series
+
+I then clarified that the recent probing had been cold and that some filament might remain on the nozzle. This condition had not been controlled. It cannot be retrospectively excluded, but neither was it established as the cause of the large deviations.
+
+The next returned series was explicitly reported at **220 °C nozzle / 50 °C bed**, at X200 Y200. All ten contacts started from Z2 and used `SAMPLES=1`, `PROBE_SPEED=0.5`, `SAMPLE_RETRACT_DIST=1`, `LIFT_SPEED=2`, with external Z moves at F120.
+
+| Across all ten contacts, 22:20–22:22 | Value |
+|---|---:|
+| Minimum trigger Z | -1.39500 mm |
+| Maximum trigger Z | -1.38625 mm |
+| Range | **0.00875 mm** |
+| Mean | -1.390875 mm |
+| Median | -1.390625 mm |
+| Population standard deviation | 0.00296 mm |
+
+This verifies excellent **single-point repeatability in that run**, including its first contact. It does not verify absolute Z correctness, a correct Z offset, repeatability after visiting other points, successful homing or a reliable mesh/print-start cycle.
+
+There was no confirmed clean/unloaded-nozzle comparison, paired heat/cool cycle with a proven unchanged Z reference, or final calibration record. Heating to 220 °C is not evidence that the nozzle was completely free of filament. The change from earlier cold coordinates near -0.07 to the warm values near -1.39 must not be recorded as a measured 1.32 mm thermal offset or attributed to soft filament without those controls.
+
+### Last supported outcome and remaining limits
+
+- The original LeviQ signal roles remain established, but intermittent trigger shifts and the later homing failure are **unresolved / reopened**.
+- A further hotend replacement did not remove the problem. Bowden removal, reset-timing changes and the manual load tests narrowed possibilities without identifying a unique component.
+- The speed-associated LED symptom is documented separately from the intermittent coordinate shifts. Neither EMI nor mechanical resonance was confirmed as their common cause.
+- Slow diagnostic probing produced one very tight warm series, not a validated final configuration. No completed final homing, multi-point mesh or print was returned after it.
+- Later homing-speed suggestions, a permanent 2 mm/s lift configuration, electrical filters, motor-current changes and additional temperature comparisons were not established as applied final fixes. The published cfg files remain unchanged.
+
+For the sequence of changing hypotheses, see [Journey.md](./Journey.md#leviq-follow-up-from-this-troubleshooting-branch). For the actual published values and verified command overrides, see [Configuration](./config/config.md#later-leviq-diagnostics-versus-this-snapshot).
 
 </details>
 
@@ -102,6 +269,10 @@ After modifying the cover:
 - The probe returned consistently to its idle state
 - False triggers stopped
 - Probe repeatability improved
+
+### Remaining limitations
+
+This was a verified earlier clearance problem, not a diagnosis of every subsequent false trigger. Later failures also occurred during a cover-off diagnostic phase with the LeviQ electronics still fitted. The final remounting state and exact cause of that recurrence were not documented.
 
 > [!TIP]
 > If the probe behaves differently after tightening the printhead cover, remove the cover and test again before changing the electrical configuration.
