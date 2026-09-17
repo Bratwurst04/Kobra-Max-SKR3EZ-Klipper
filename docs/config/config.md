@@ -44,6 +44,11 @@ The cfg files preserve a machine-specific reference, not a self-contained, immed
 | Input Shaper | No accelerometer MCU, `[adxl345]`, `[resonance_tester]` or `[input_shaper]` section is included | X/Y calibration completed in the conversation, but that live setup and saved values are absent here |
 | Nozzle cleaner | No `NOZZLE_WIPE` macro or call is present | Initial operation was reported after a proposed macro; the final applied version is not in this snapshot |
 | Later LeviQ diagnostics | Probe speed, lift, retract and sampling overrides in the returned logs differ from these files | See [published-versus-tested settings](#later-leviq-diagnostics-versus-this-snapshot); no cfg update or final reliable homing/mesh sequence is established |
+| Later safe Z home | Snapshot still has `home_xy_position: 200, 200` | A later live change to approximately X208 Y223 and a new warm Z-offset were reported; this snapshot was not edited to match |
+| Later hotend sensor profile | Snapshot already uses `EPCOS 100K B57560G104F` | A live `Generic 3950` trial caused severe extrusion resistance at displayed 210 °C and was reverted to EPCOS-style curve; retuning remained incomplete |
+| Filament runout | `accessories.cfg` contains only the toolhead LED | PC2 wiring is mapped and a start check/automatic pause was planned, but no functional runout test was returned |
+| Later motion tuning | Snapshot still uses X/Y 64, Z/E 16 microsteps and 0.70/0.40 A run/hold currents on XYZ | A later live experiment used X/Y/Z/E run currents about 0.80/0.90/0.80/0.80 A, 64/64/32/32 microsteps, no separate hold current, X/Y interpolation enabled and Z/E interpolation disabled; not written into this snapshot |
+| Later pause/cancel behavior | Snapshot does not contain the custom recovery macros | User reported improved behavior after changing pause/cancel parking for position-loss cases; exact final live macro was not returned |
 
 The required `z_offset` is confirmed by the [upstream probe reference](https://www.klipper3d.org/Config_Reference.html#probe), checked during this documentation review. No cfg file was changed and no startup test of the distributed snapshot was performed as part of this update.
 
@@ -66,9 +71,16 @@ A `NOZZLE_WIPE` macro and a revised `PRINT_START` were subsequently proposed for
 
 ### Extrusion and thermal reports versus this snapshot
 
-The PLA tower preference of 210–215 °C, approximate YOLO flow result of 0.985 and inconclusive 7–8 mm retraction observation belong to the [tuning history](../Journey.md#tuning-and-hardware-upgrade-follow-up). They do not replace `rotation_distance: 22.350`, `gear_ratio: 3:1` or `pressure_advance: 0.44`, and no final slicer profile is bundled here.
+The PLA tower preference of 210–215 °C, approximate YOLO flow result of 0.985 and inconclusive 7–8 mm retraction observation belong to the [tuning history](../Journey.md#tuning-and-hardware-upgrade-follow-up). They do not replace `rotation_distance: 22.350`, `gear_ratio: 3:1` or `pressure_advance: 0.44` in this published snapshot.
+
+A later Bowden-tube replacement was followed by a reported Pressure Advance result around **0.8**. Another hotend/thermistor change then reopened extrusion calibration, so neither 0.44 nor 0.8 should be presented as a universal or final current value. No final Orca filament profile is bundled here.
 
 The published hotend still uses `sensor_type: EPCOS 100K B57560G104F`. The OEM replacement report and the later product comparisons do not establish the identity/curve of the final installed sensor. An advertised NTC100K value alone is not confirmation of this exact configured sensor model. No proposed cartridge sensor, heater wattage, PID value, temperature limit or post-replacement Z offset was applied to these cfg files.
+
+
+A later live comparison tested `Generic 3950`. At a displayed 210 °C the extruder struggled badly enough to grind filament; after reverting to the published `EPCOS 100K B57560G104F` curve, stationary extrusion at the same displayed temperature was reported as much better. This is a functional rejection of `Generic 3950` for the current installed sensor, not proof of the thermistor's exact physical part number.
+
+The same follow-up reported moving safe Z home to about X208 Y223, completing a warm Z-offset, and disabling TMC Autotune because the available `ldo-42sth48-2504ah` motor profile was not verified for the installed OEM motor. The supplied snapshot already comments out the autotune include. Final PID, flow, max-flow and PA retests after the thermistor rollback were still pending.
 
 Klipper-Backup activity and a separate computer/GitHub config copy were reported, but no restore test or exact backup revision was supplied. Those reports do not make this ZIP the final live backup or provide its missing host-side files.
 
@@ -322,6 +334,11 @@ Verify motor temperatures and tune currents for the actual motors and mechanical
 
 The early test log used `run_current: 0.80` for X/Y and `0.90` for Z with `stealthchop_threshold: 999999`. The published file instead uses `stealthchop_threshold: 0` and the values above. This update preserves the published settings rather than restoring the earlier test configuration. The single Z-driver entry controls both parallel outputs; it does not provide independently adjustable current or direction for each Z motor.
 
+
+A still later live experiment moved to roughly 0.80 A X, 0.90 A Y, 0.80 A Z and 0.80 A extruder, removed the separate hold-current settings, used 64 microsteps on X/Y and 32 on Z/E, and ended with interpolation enabled on X/Y but disabled on Z/E. X/Y interpolation had briefly been disabled when a high-pitched motor sound was noticed. The later values were used during aggressive acceleration testing but were not returned as a complete final cfg snapshot, so the files distributed here remain unchanged.
+
+The same testing reached about 90,000 mm/s² at a 200 mm/s slicer speed cap before Y skipped steps at 100,000 mm/s². That is a short limit-finding result, not a quality recommendation or a replacement for the much lower Input Shaper smoothing guidance.
+
 The configured UART pins are verified for the current SKR layout:
 
 | Driver | UART pin |
@@ -427,11 +444,19 @@ These values describe the earlier snapshot associated with successful tests afte
 
 ### Safe Z home
 
+The published snapshot contains:
+
 ```ini
 home_xy_position: 200, 200
 ```
 
-This location is appropriate for the current measured bed coordinates but should be checked on another printer.
+A later live change moved the home point to approximately:
+
+```ini
+home_xy_position: 208, 223
+```
+
+after measuring the practical bed centre. A new warm Z-offset was also reported. The cfg file in this repository remains unchanged, so the later value is documented here as a live-machine follow-up rather than silently written into the published snapshot.
 
 ### Later LeviQ diagnostics versus this snapshot
 
@@ -482,6 +507,8 @@ pin: PE5
 
 The original `LEVE` toolhead wire is used as the LED control signal.
 
+The original filament runout sensor is mapped to `E0-DET / PC2`, but this snapshot does not define a `[filament_switch_sensor]`. A later start-sequence check and automatic pause behavior were proposed, but no returned sensor query or runout event verified the active polarity or completed integration.
+
 
 ## `macros.cfg`
 
@@ -508,6 +535,9 @@ PRINT_START BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperat
 The published `PRINT_START` contains `M104 S150` before homing and `M109 S{EXTRUDER}` after `SMART_PARK`. It does not contain a pre-probing `M109 S150` / `G4 P2000` sequence. That alternative was described in the troubleshooting conversation, but a complete readable updated live macro was not available for this review; it is not recorded here as a confirmed change to the supplied snapshot.
 
 The opening handover also reported `extruder not hot enough` after some failed KAMP/mesh attempts. Continuing toward purge was a suspected secondary issue, not a demonstrated control-flow diagnosis or completed macro fix. No cfg or macro was changed in this documentation update.
+
+
+A later position-loss issue changed pause/cancel behavior outside this snapshot. After skipped XY steps, an absolute park toward the far corner could crash because the logical and physical positions no longer matched. A custom pause/cancel/crash-abort approach was reported as much better, but the final macro body was not returned and is therefore not recreated here.
 
 ### LED startup macro
 
