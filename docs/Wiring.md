@@ -17,6 +17,8 @@ The spreadsheet diagram is useful for seeing the original connector grouping and
 
 The tables below are the text-based reference for the currently verified wiring. If the spreadsheet and this document disagree, treat the text tables as the newer source and verify the physical wire before changing anything.
 
+The embedded spreadsheet still contains historical labels such as `Strain Gauge i2C` and `5V?` beside the unused optical Z sensor. Those annotations are not confirmed signal or supply specifications. The older chat worksheet `Anycubic Kobra Max Klipper - Blad1-7.pdf` also contained tentative PC13/PE5 probe assignments; it does not replace the verified PB15/PB14/PE5 mapping below. Neither the image nor the older worksheet was redrawn during this documentation update.
+
 
 ## Important to note
 > [!NOTE]
@@ -139,6 +141,8 @@ Continuity testing confirmed that each group is joined on the toolhead PCB.
 | All three `24V` wires | `HE0 +` | Constant +24 V to toolhead/heater | ✅ |
 | All three `HEAT` wires | `HE0 -`, switched by `PB3` | Hotend heater switched return | ✅ |
 
+Here `PB3` names the MCU signal controlling the heater MOSFET. The physical connection is the `HE0 -` screw terminal, not a bare GPIO or an ordinary GND pin. Fan returns remain on their own switched outputs; sharing the +24 V supply does not combine the switched returns.
+
 #### Note:
 >> The parallel conductors should remain grouped so the heater current is shared across the original connector pins.
 >> Do not force several conductors into a terminal in a way that leaves loose strands.
@@ -218,8 +222,9 @@ It contains:
 - Bowden extruder motor
 - X endstop
 - Filament runout sensor
-- A separate chassis-ground wire to the X gantry
 - One unused 3.3 V position
+
+A separate wire bonds the X gantry to the chassis. It is listed below for completeness, but physical tracing identified it as separate from the X connector rather than an additional populated connector pin.
 
 <details>
   <summary><h3>X harness signals</h3></summary>
@@ -315,6 +320,8 @@ Apply the same coil mapping to each motor connector:
 | `OB1` | `2A` |  
 | `OB2` | `2B` |  
 Connect one motor to `ZAM` and the other to `ZBM`.
+
+This is the base coil mapping, not proof that both finished connectors have identical polarity: the verified build required one coil pair to be reversed on one motor. The available early troubleshooting record does not identify which physical motor or coil was changed. Changing `[stepper_z]`'s `dir_pin` reverses both outputs together, not one connector independently.
 </details>
 
 > [!IMPORTANT]
