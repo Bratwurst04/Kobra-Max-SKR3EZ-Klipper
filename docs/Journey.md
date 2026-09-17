@@ -1018,6 +1018,88 @@ On 2026-08-14 I reported an ordered unit arriving with a 0.09 Ω "short", withou
 
 ---
 
+
+
+# Post-shaper speed, motion and slicer follow-up
+
+These later experiments pushed the machine far beyond the conservative quality settings used for normal printing. They are recorded as limit-finding history, not recommended defaults.
+
+## High-acceleration limit tests
+
+With Orca capped at 200 mm/s, I increased runtime acceleration well beyond the earlier MZV smoothing recommendations. At the earlier 0.70 A X/Y current, Y skipped steps around 15,000 mm/s² while X still looked stable.
+
+After later motor-current and microstep changes, a further test reached about **90,000 mm/s²** without an obvious step loss; at **100,000 mm/s²** Y skipped again. I described the motion as appearing to jump almost instantly to 200 mm/s at each corner, and the whole printer shook heavily.
+
+The walls could still look surprisingly clean below the step-loss point, but I also observed increasingly rounded corners as acceleration rose. These runs therefore establish a large mechanical/motor margin under short test conditions, not a quality-appropriate print acceleration or a reason to override the much lower Input Shaper smoothing limits.
+
+## Later live TMC and microstep experiment
+
+I reported moving away from the published snapshot's 0.70 A / 0.40 A run/hold-current setup. One later live configuration used approximately:
+
+| Axis | Reported run current | Reported microsteps | Interpolation after the follow-up |
+|---|---:|---:|---|
+| X | 0.80 A | 64 | Enabled |
+| Y | 0.90 A | 64 | Enabled |
+| Z | 0.80 A | 32 | Disabled |
+| E | 0.80 A | 32 | Disabled |
+
+Separate hold-current entries were removed in that live experiment. X/Y interpolation was first disabled and was then turned back on after a high-pitched motor sound was noticed. No returned comparison proved the exact acoustic cause or established these values as the final permanent settings.
+
+The supplied `tmc.cfg` and `steppers.cfg` intentionally remain the older published snapshot.
+
+## Slicer findings at high speed
+
+A fast print showed one badly formed corner. Lowering **outer-wall acceleration to roughly 700 mm/s²** removed the problem in the next reported comparison, making acceleration a better explanation for that defect than the earlier scarf-seam suspicion.
+
+I also reported that Adaptive Cubic infill sometimes let the nozzle hit already printed plastic and degrade the surface. I switched to Gyroid. That was a slicer/process change, not a Klipper firmware fix.
+
+The Bowden tube was later replaced and a new Pressure Advance test gave approximately **0.8**, compared with the earlier 0.44. A subsequent hotend/thermistor change reopened the extrusion calibration again, so 0.8 is historical rather than a final value.
+
+## Pause/cancel behavior after skipped steps
+
+When XY had skipped steps, the normal pause/cancel parking behavior could send the toolhead toward the far X/Y corner using coordinates that no longer matched the physical position. I reported crashes near the upper travel limits.
+
+A custom pause/cancel approach was then applied so normal pause parks near X0/Y0 and cancel avoids a risky XY park; a separate crash-abort flow re-homes X/Y after lifting Z. I reported that this behavior was much better.
+
+The exact final live macro body was not returned in the repository snapshot, so this is documented as verified behavior rather than copied into `macros.cfg`.
+
+
+# Later hotend, thermistor and runout follow-up, 2026-09-17
+
+This later branch followed additional probe troubleshooting and another hotend change. It records live changes and test observations that are newer than the published cfg snapshot; the cfg files in this repository were intentionally not edited during this documentation update.
+
+## Safe Z-home moved to the measured bed centre
+
+I measured the practical bed centre at about X208 Y223 and reported changing `safe_z_home` from X200 Y200 to approximately X208 Y223. I also reported completing a new warm Z-offset calibration after the hotend/probe work.
+
+This is a reported live configuration change. The supplied `leviq_probe.cfg` still contains `home_xy_position: 200, 200`, so the repository snapshot does not yet reproduce that live value.
+
+## TMC Autotune disabled
+
+TMC Autotune had previously been downloaded, but the available autotune configuration used an `ldo-42sth48-2504ah` motor profile that was not verified as the installed OEM extruder motor. I reported disabling TMC Autotune rather than continuing with an unverified motor model.
+
+No successful autotune result or validated OEM motor profile is recorded in this branch. The published `printer.cfg` already keeps the autotune include commented out.
+
+## Generic 3950 trial was rejected on this machine
+
+After replacing the hotend again, I considered changing the hotend thermistor from the published `EPCOS 100K B57560G104F` curve to `Generic 3950`, because online descriptions repeatedly called the sensor a 100 kΩ B3950 part.
+
+The live `Generic 3950` trial produced a clear practical problem: at a displayed 210 °C the extruder had great difficulty pushing filament and eventually ground the filament. After reverting to `EPCOS 100K B57560G104F`, a stationary extrusion test at the same displayed 210 °C was reported as much better.
+
+That observation rejects the `Generic 3950` configuration for the current installed sensor on this machine. It does **not** identify the physical thermistor part number with laboratory certainty; no external reference thermometer or resistance-temperature characterization was supplied.
+
+Because calibration work performed under the rejected sensor curve cannot be treated as equivalent to the reverted setup, I planned to repeat hotend PID, flow, maximum volumetric flow and Pressure Advance with the EPCOS-style curve. At the end of the available branch, maximum-flow and PA retests had not yet been completed.
+
+## Filament runout moved from wiring-only to planned integration
+
+The original runout-sensor wiring remained mapped to `E0-DET / PC2`. I then asked to integrate it so that:
+
+- `PRINT_START` checks for filament before waiting for the bed temperature;
+- loss of filament during a print triggers a pause.
+
+A Klipper `filament_switch_sensor` configuration and start-sequence check were proposed, but no returned `QUERY_FILAMENT_SENSOR`, pause event or completed print verified the polarity or behavior. The feature therefore remains **pending / not tested**, not a completed configuration milestone.
+
+
 # 15. Current project status
 
 ## Verified
@@ -1031,7 +1113,7 @@ These are established hardware and build milestones. Later probing failures limi
 - Original LeviQ signal identification
 - LeviQ reset function and early improvement
 - Z homing in the initial working setup; later reliability reopened
-- Earlier hotend operation; further replacement and missing final calibration documented
+- Earlier hotend operation; later replacement work now includes a failed `Generic 3950` trial and a reported return to the EPCOS-style sensor curve, with final retuning still incomplete
 - Heated bed
 - Original external MOSFET
 - Original fans
@@ -1048,9 +1130,9 @@ These are established hardware and build milestones. Later probing failures limi
 
 ## Pending
 
-- Final saved Input Shaper/accelerometer configuration and comparative print validation
+- Final saved Input Shaper/accelerometer configuration and controlled before/after ringing comparison
 - Final nozzle-cleaner/start-sequence version
-- Filament runout sensor configuration
+- Filament runout sensor configuration and functional verification; PC2 is mapped but the proposed start check/pause behavior has not been returned as tested
 - Final documentation photographs
 - Raspberry Pi and USB-hub enclosure
 - Long-term speed and flow tuning

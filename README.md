@@ -20,7 +20,7 @@ The build retains most of the original printer hardware, including the Bowden ex
 | Interface | Mainsail and Moonraker |
 | Firmware | Klipper |
 | Extruder | Original Bowden extruder |
-| Hotend | Replacement hotend; cross-branch model/calibration status not fully established |
+| Hotend | Replacement hotend; current sensor profile reverted to `EPCOS 100K B57560G104F` after a failed `Generic 3950` trial; final retuning remains incomplete |
 | Z probe | Original LeviQ strain gauge |
 | Heated bed | Original bed and external MOSFET |
 | Adaptive mesh | KAMP |
@@ -58,16 +58,16 @@ The build retains most of the original printer hardware, including the Bowden ex
 | X/Y endstops | ✅ Verified | Original two-wire endstops |
 | Original LeviQ | ⚠️ Reliability reopened | PB15/PB14 mapping verified; later intermittent trigger shifts remain unresolved |
 | Z homing | ⚠️ Reliability reopened | Earlier success; later failed/false-trigger homing not closed |
-| Hotend and thermistor | ⚠️ Partially verified | Earlier heating/prints verified; later replacements and thermistor faults have no final validated setup |
+| Hotend and thermistor | ⚠️ Partially verified | `Generic 3950` produced apparent underheating and severe extrusion resistance; reverting to the EPCOS-style curve improved manual 210 °C extrusion. Final PID/flow/max-flow/PA retests remain incomplete |
 | Bed heater and MOSFET | ✅ Verified | Original external MOSFET retained |
 | Original fans | ✅ Verified | Part-cooling and hotend fans |
 | Toolhead LED | ✅ Verified | Controlled through PE5 |
 | KAMP adaptive mesh | ⚠️ Integration verified | Adaptive mesh/line purge worked; later LeviQ reliability remains open |
-| Pressure Advance | ✅ Verified | Current value remains machine- and filament-specific |
-| Input Shaper | ✅ Calibration completed | X/Y MZV results recorded; final saved cfg and print-quality comparison not supplied |
+| Pressure Advance | ⚠️ Retune pending | Earlier values were measured under previous Bowden/hotend states; latest hotend/thermistor rollback requires another PA calibration |
+| Input Shaper | ✅ Calibration completed | X/Y MZV results recorded; later fast-print observations exist, but no controlled before/after ringing comparison or final saved cfg was supplied |
 | Nozzle cleaner | ⚠️ Initial operation reported | Bed-mounted cleaner; final macro/start-sequence version not supplied |
 | Host network | ⚠️ Unresolved / reopened | Later access outages remain unclosed |
-| Filament runout sensor | ⏳ Pending | Wiring mapped but not configured |
+| Filament runout sensor | ⏳ Pending | Wiring mapped to PC2; automatic start check and pause behavior were planned but not yet functionally verified |
 
 The dated tuning and upgrade reports supplement the separate LeviQ/network investigations; their cross-branch order is not fully established. Earlier successes do not close those later-reported faults. The [configuration guide](./docs/config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot) distinguishes machine reports from features absent in the published cfg files.
 
@@ -129,8 +129,9 @@ Mainsail is used as the primary interface.
 
 - PLA temperature/flow trials and X/Y Input Shaper calibration completed; see [the tuning follow-up](./docs/Journey.md#tuning-and-hardware-upgrade-follow-up)
 - Retraction result inconclusive; sustained maximum flow and quality-focused speed limits not established
-- Post-shaper print comparison not documented
-- Intermittent extrusion and thermistor faults remain open alongside LeviQ/network reliability
+- Post-shaper fast-print observations are documented, but no controlled before/after ringing comparison was supplied
+- Hotend sensor-profile troubleshooting now favors the published EPCOS-style curve on this machine; final PID, flow, max-flow and PA retests after the latest hotend work are still pending
+- Intermittent extrusion and thermistor history remains relevant alongside LeviQ/network reliability
 
 ### Accessories
 

@@ -27,7 +27,7 @@ It separates:
 | Toolhead probe | Original Anycubic LeviQ strain gauge | ⚠️ Retained; repeatability/homing reopened |
 | Logic conversion | 4-channel bidirectional 3.3 V ↔ 5 V level shifter | ✅ |
 | Extruder | Original Bowden extruder | ✅ |
-| Hotend | Replacement hotend; latest model not documented | ⚠️ Further replacement reported; final recalibration unverified |
+| Hotend | Replacement hotend; latest model not documented | ⚠️ Current software curve reverted to EPCOS-style after `Generic 3950` caused apparent underheating; final retuning unverified |
 | Heated bed | Original Anycubic heated bed | ✅ |
 | Bed power stage | Original external bed MOSFET | ✅ |
 | X/Y/Z motors | Original Anycubic stepper motors | ✅ |
@@ -454,6 +454,8 @@ The long Bowden tube results in a higher Pressure Advance value than a typical d
 
 The tube was completely disconnected for some later probe-isolation tests, and large errors persisted. Subsequent motion tests again mentioned Bowden behavior, so the whole investigation must not be labelled Bowden-free. No direct-drive conversion was reported. Later skipping and filament grinding are recorded in [Issues.md](./Issues.md#intermittent-extruder-skipping-and-filament-grinding); suspected gear wear was not confirmed by inspection.
 
+A later tuning branch reported replacing the Bowden tube and then measuring Pressure Advance at approximately **0.8**. Another hotend/thermistor change followed, so that value is historical rather than a final calibration for the current assembly. The original Bowden architecture remains in use.
+
 ## Filament runout sensor
 
 The original filament runout wiring has been mapped.
@@ -469,6 +471,8 @@ The intended SKR input is:
 ```text
 E0-DET / PC2
 ```
+
+A later branch defined the desired behavior as a filament-presence check during `PRINT_START` before waiting for bed temperature, plus automatic pause on runout. That behavior had not yet been functionally verified when this documentation update was prepared.
 
 ---
 
@@ -507,6 +511,13 @@ The latest replacement's model, nozzle geometry and exact heater/thermistor comp
 On 2026-08-07 I reported a thermistor problem and an attempted repair that was too fiddly to continue. On 2026-08-09 I reported a new OEM hotend and silicone sock, saying that it seemed to print okay. Later that day, intermittent extrusion failure was still reported. On 2026-08-14 I reported an ordered unit arriving with a "short" reading of 0.09 Ω, without identifying the measured component or test arrangement.
 
 These dated reports do not identify the model of the separate LeviQ branch's further replacement or establish which hotend was ultimately retained across branches. No exact OEM part number, final sensor specification or new PID/Z-offset record accompanies them. The earlier inventory and the unresolved cross-branch replacement status are therefore preserved. Detailed failure limits are in [Issues.md](./Issues.md#hotend-thermistor-failures-in-the-upgrade-branch).
+
+
+### Later thermistor-curve comparison
+
+In the later follow-up I changed the live hotend thermistor profile to `Generic 3950` based on online descriptions of the sensor. At a displayed 210 °C the extruder then struggled severely and ground filament. Reverting the live configuration to `EPCOS 100K B57560G104F` produced a much better stationary 210 °C extrusion test.
+
+For this machine, the EPCOS-style Klipper curve is therefore the currently preferred software profile. This is a functional comparison, not a physical part-number identification: no external thermometer or resistance-temperature measurement was used. Final PID, flow, maximum-flow and PA retuning after the latest hotend work was still incomplete at the end of the available branch.
 
 ### Upgrade candidates, not installed hardware
 

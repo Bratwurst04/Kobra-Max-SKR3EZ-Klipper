@@ -23,7 +23,9 @@ The goal is not only to list the final fix, but also to preserve the symptoms th
 | Extruder UART on wrong pin | `Unable to read tmc uart 'extruder' register IFCNT` | Use E0 UART pin PC6 |
 | Bed thermistor on wrong header | Invalid or missing bed temperature | Use TB / PA1 instead of TH1 |
 | [Hotend thermistor failures](#hotend-thermistor-failures-in-the-upgrade-branch) | Repair difficulty and a reported 0.09 Ω "short" on a delivered unit | OEM replacement briefly printed; final faulty component/setup not established |
+| [Generic 3950 profile mismatch](#generic-3950-profile-caused-apparent-underheating) | Displayed 210 °C but filament was very difficult to extrude and was ground by the extruder | Revert to `EPCOS 100K B57560G104F`; manual 210 °C extrusion improved, exact thermistor identity still unverified |
 | [Intermittent extrusion failure](#intermittent-extruder-skipping-and-filament-grinding) | Skipping, grinding and eventual loss of extrusion | No confirmed cause or lasting fix |
+| [Pause/cancel after skipped XY steps](#pause-or-cancel-could-crash-after-skipped-xy-steps) | Parking move headed toward the far X/Y corner after position was lost | Custom pause/cancel behavior reduced the risk; exact final macro not captured |
 | [High-flow thermal shutdown](#temperature-loss-during-the-max-flow-trial) | Shutdown around 22 mm³/s despite acceptable-looking output | Thermal limit encountered; missing sock suspected, no controlled retest |
 | [Input Shaper package setup](#input-shaper-dependency-installation) | `libatlas-base-dev` had no installation candidate | Setup subsequently reported OK and calibration completed |
 | SD flashing confirmation | `firmware.bin` remains unchanged | Klipper USB identity and later MCU communication verified; SD rename cause unresolved |
@@ -423,6 +425,34 @@ After changing the UART pin to `PC6`:
 - `STEPPER_BUZZ STEPPER=extruder` worked normally
 
 </details>
+
+<details>
+<summary><strong>Pause or cancel could crash after skipped XY steps</strong></summary>
+
+### Symptoms
+
+During aggressive motion testing, if X or Y skipped steps, Klipper's logical coordinates no longer matched the physical toolhead position. A later pause or cancel could then command a parking move toward the far X/Y corner and mechanically crash near the travel limits.
+
+### Cause
+
+The immediate problem was not that `PAUSE` itself caused the skipped steps. The printer had already lost position, and an absolute XY park based on stale coordinates became unsafe.
+
+### Fix and verification
+
+A custom pause/cancel strategy was applied so that:
+
+- normal pause parks near X0/Y0;
+- cancel avoids a risky XY parking move;
+- a dedicated crash-abort path lifts Z and re-homes X/Y rather than attempting to resume from a lost position.
+
+The next user report said the behavior was much better.
+
+### Remaining limitations
+
+The final live macro text was not returned, so the repository snapshot does not reproduce this behavior. A print that has genuinely skipped XY steps should still be treated as position-lost; re-homing is for recovery after abort, not proof that the interrupted print can safely resume.
+
+</details>
+
 </details>
 
 ---
@@ -447,6 +477,47 @@ Between those reports, on 2026-08-09, I reported a new OEM hotend plus silicone 
 ### Remaining limitations
 
 No exact final replacement model, sensor curve, new PID/Z-offset record or concluding print test was supplied. The order relative to the separate [LeviQ hotend replacement](#leakage-tightening-and-a-further-hotend-replacement) is not established. Candidate cartridge-sensor hotends remained comparison material; see [Hardware.md](./Hardware.md#upgrade-candidates-not-installed-hardware).
+
+
+## Generic 3950 profile caused apparent underheating
+
+**Status: `Generic 3950` rejected for the current installed hotend; EPCOS-style curve restored.**
+
+### Symptoms
+
+After a later hotend replacement I changed the live hotend thermistor profile from:
+
+```ini
+sensor_type: EPCOS 100K B57560G104F
+```
+
+to:
+
+```ini
+sensor_type: Generic 3950
+```
+
+At a displayed **210 °C** the filament was very difficult to extrude. The extruder eventually ground the filament, consistent with the hotend behaving substantially colder than the displayed value.
+
+### Interpretation
+
+The result is strong machine-specific evidence that `Generic 3950` was the wrong Klipper curve for the installed sensor in that setup.
+
+It does not prove that the physical sensor is literally an EPCOS B57560G104F. Both names are software resistance-temperature curves; no external temperature probe or resistance-versus-temperature measurement was supplied to identify the thermistor itself.
+
+### Fix and verification
+
+I reverted the live configuration to:
+
+```ini
+sensor_type: EPCOS 100K B57560G104F
+```
+
+A stationary extrusion test at the same displayed **210 °C** was then reported as much better.
+
+### Remaining limitations
+
+The later PID, flow, maximum-volumetric-flow and Pressure Advance calibrations still needed to be repeated after the rollback. The published `steppers.cfg` already contains the EPCOS-style curve, so no cfg-file edit was required for this documentation update.
 
 ## Historical bed-heater section-name error
 
