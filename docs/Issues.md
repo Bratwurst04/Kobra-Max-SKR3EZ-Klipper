@@ -429,6 +429,8 @@ After changing the UART pin to `PC6`:
 
 </details>
 
+<a id="pause-or-cancel-could-crash-after-skipped-xy-steps"></a>
+
 <details>
 <summary><strong>Pause or cancel could crash after skipped XY steps</strong></summary>
 

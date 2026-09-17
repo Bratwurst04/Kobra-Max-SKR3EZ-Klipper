@@ -159,7 +159,7 @@ A full start-to-finish installation guide is not available yet.
 For now, the repository should be treated as:
 
 1. A verified wiring reference
-2. A working configuration snapshot
+2. A [machine-specific reference configuration snapshot](./docs/config/config.md#published-snapshot-and-host-state), with prerequisites and limitations documented there
 3. A record of problems and solutions from the conversion
 
 > [!CAUTION]

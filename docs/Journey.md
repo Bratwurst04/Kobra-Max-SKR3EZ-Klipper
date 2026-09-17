@@ -731,7 +731,7 @@ rotation_distance: 22.350
 gear_ratio: 3:1
 ```
 
-This value belongs to the current extruder and should not be treated as universal.
+This value belongs to the earlier calibrated extruder setup retained in the published snapshot and should not be treated as universal.
 
 ## Pressure Advance
 
@@ -747,7 +747,7 @@ This improved corner bulging on the tested filament and setup.
 
 Pressure Advance remains material- and temperature-dependent.
 
-The bowden tube is also not in the greatest shape, affecting the value.  
+The Bowden tube was also not in the greatest shape at this stage, affecting the value.
 
 ## Calibration cube dimensions
 
@@ -1004,15 +1004,15 @@ I reported downloading Klipper-Backup and TMC Autotune, then reported placing a 
 
 ## USB hub and X/Y Input Shaper, 2026-08-03
 
-The hub arrived and I reported it working, with the Mellow FLY ADXL345 taped firmly to the printhead and enough cable slack across X travel. The hub used in this phase was later identified in the same chat as a VBESTLIFE 4-port Micro USB 2.0 OTG charge hub. The Pi was separately powered through `PWR IN`, while the hub's fixed micro-USB plug used the Pi `USB` port; USB-A→USB-B went to the SKR and USB-A→USB-C to the FLY board. Switch position 3 was the reported working setting.
+The hub arrived and I reported it working, with the Mellow FLY ADXL345 taped firmly to the printhead and enough cable slack across X travel. The hub used in this phase was later identified in the same chat as a VBESTLIFE 4-port Micro USB 2.0 OTG charge hub. The reported cabling, separate Pi power and working hub-switch position are recorded in [Wiring.md](./Wiring.md#usb-accelerometer-connection-follow-up).
 
-The first USB diagnostic capture at 11:22 CEST showed the hub plus both downstream devices: `1d50:6177 ... rp2040` and `1d50:614e ... stm32h723xx`. However, the RP2040 appeared under `/dev/serial/by-id/` as `usb-katapult_rp2040_12345-if00`, and the live `adxl.cfg` pointed `[mcu adxl]` at that path. Klippy then logged `mcu 'adxl': Timeout on connect` and `mcu 'adxl': Wait for identify_response`. This narrowed the immediate problem to the accelerometer firmware state rather than a missing USB data path. After the FLY board was flashed with Klipper, I reported a successful `ACCELEROMETER_QUERY` with non-zero X/Y/Z values, and setup proceeded. The exact post-flash serial identifier and full final `adxl.cfg` were not returned.
+The first USB diagnostic capture at 11:22 CEST showed the hub plus both downstream devices. However, the RP2040 presented its Katapult bootloader identity, and Klippy could not connect to it as the accelerometer MCU. This narrowed the immediate problem to the accelerometer firmware state rather than a missing USB data path. After the FLY board was flashed with Klipper, I reported a successful `ACCELEROMETER_QUERY` with non-zero X/Y/Z values, and setup proceeded. The exact post-flash serial identifier and full final `adxl.cfg` were not returned. The USB identities, configured path and errors are recorded in [Issues.md](./Issues.md#fly-adxl-enumerated-as-katapult-instead-of-a-klipper-mcu).
 
 An unavailable dependency package also blocked the resonance-analysis setup. After the revised dependency instructions I reported OK, then supplied separate X and Y calibration logs.
 
 The logs recommended MZV at 59.2 Hz for X and 26.6 Hz for Y. They establish completed analysis, including both values in the final Y output. The full results and the distinction between smoothing estimates, saved configuration and tested printing limits are kept in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
-After the calibration window, hot-plugging the ADXL was followed by a USB-enumeration failure. Diagnostic captures at 12:19 and 12:49 CEST showed only the root hub and `214b:7260 Huasheng Electronics USB2.0 HUB`; `/dev/serial/by-id/` was absent, and the kernel repeatedly logged `device descriptor read/64, error -71`, `device not accepting address` and `unable to enumerate USB device`. I then reported that operation returned after a full power cycle and suspected the ADXL hot-plug sequence. That temporal link is preserved as the observed history, not as a proven root cause.
+After the calibration window, hot-plugging the ADXL was followed by a USB-enumeration failure. Diagnostic captures at 12:19 and 12:49 CEST showed the hub but neither downstream MCU; the detailed errors are recorded in [Issues.md](./Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug). I then reported that operation returned after a full power cycle and suspected the ADXL hot-plug sequence. That temporal link is preserved as the observed history, not as a proven root cause.
 
 I explicitly said I had not yet test-printed immediately after calibration. A later "it works" reply followed the cleaner discussion, and referred to Input Shaper as calibrated; it did not provide a before/after ringing comparison or a captured final saved cfg. The later OEM-hotend print report did not supply that comparison either.
 
@@ -1038,11 +1038,11 @@ These later experiments pushed the machine far beyond the conservative quality s
 
 ## High-acceleration limit tests
 
-With Orca capped at 200 mm/s, I increased runtime acceleration well beyond the earlier MZV smoothing recommendations. At the earlier 0.70 A X/Y current, Y skipped steps around 15,000 mm/s² while X still looked stable.
+With Orca capped at 200 mm/s, I increased the requested runtime acceleration well beyond the earlier MZV smoothing recommendations. At the earlier 0.70 A X/Y current, Y skipped steps with a requested acceleration around 15,000 mm/s² while X still looked stable.
 
-After later motor-current and microstep changes, a further test reached about **90,000 mm/s²** without an obvious step loss; at **100,000 mm/s²** Y skipped again. I described the motion as appearing to jump almost instantly to 200 mm/s at each corner, and the whole printer shook heavily.
+After later motor-current and microstep changes, a further test used a requested acceleration of about **90,000 mm/s²** without an obvious step loss; with **100,000 mm/s²** requested, Y skipped again. I described the motion as appearing to jump almost instantly to 200 mm/s at each corner, and the whole printer shook heavily.
 
-The walls could still look surprisingly clean below the step-loss point, but I also observed increasingly rounded corners as acceleration rose. These runs therefore establish a large mechanical/motor margin under short test conditions, not a quality-appropriate print acceleration or a reason to override the much lower Input Shaper smoothing limits.
+The walls could still look surprisingly clean below the step-loss point, but I also observed increasingly rounded corners as the requested acceleration rose. These observations describe those particular short tests; no measured motion profile establishes the acceleration physically attained. They do not establish a quality-appropriate print acceleration or a reason to override the much lower Input Shaper smoothing limits.
 
 ## Later live TMC and microstep experiment
 
