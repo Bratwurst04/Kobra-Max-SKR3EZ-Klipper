@@ -17,6 +17,9 @@ The spreadsheet diagram is useful for seeing the original connector grouping and
 
 The tables below are the text-based reference for the currently verified wiring. If the spreadsheet and this document disagree, treat the text tables as the newer source and verify the physical wire before changing anything.
 
+> [!NOTE]
+> LeviQ signal identification and initial functional tests remain verified, but later probing and Z-homing reliability were reopened. The checkmarks identify established connections, not proof of noise-free operation during every movement. No new pin mapping, supply wiring or filtering change was confirmed in that follow-up; see [the recorded investigation](./Issues.md#intermittent-trigger-shifts-after-the-initial-fixes).
+
 The embedded spreadsheet still contains historical labels such as `Strain Gauge i2C` and `5V?` beside the unused optical Z sensor. Those annotations are not confirmed signal or supply specifications. The older chat worksheet `Anycubic Kobra Max Klipper - Blad1-7.pdf` also contained tentative PC13/PE5 probe assignments; it does not replace the verified PB15/PB14/PE5 mapping below. Neither the image nor the older worksheet was redrawn during this documentation update.
 
 
@@ -200,7 +203,7 @@ A bidirectional 3.3 V ↔ 5 V logic level shifter is used between the original t
   G4 P600
   ```
   This reset is run in the probe `activate_gcode` before every probe attempt.
-  Without the reset, the measured trigger point drifted significantly between samples. With the reset enabled, repeated measurements became consistent enough for Z homing and bed meshing.
+  Without the reset, the measured trigger point drifted significantly between samples. With the reset enabled, the initial repeated measurements became consistent enough for Z homing and bed meshing. Later recurrence showed that this was not a permanent resolution of every trigger-shift problem; the published pulse above is not the same as every later diagnostic timing. See [Configuration](./config/config.md#later-leviq-diagnostics-versus-this-snapshot).
 
   #### Toolhead LED
   The original `LEVE` wire is connected to `PE5`.
@@ -319,6 +322,7 @@ Apply the same coil mapping to each motor connector:
 | `OA2` | `1B` |  
 | `OB1` | `2A` |  
 | `OB2` | `2B` |  
+
 Connect one motor to `ZAM` and the other to `ZBM`.
 
 This is the base coil mapping, not proof that both finished connectors have identical polarity: the verified build required one coil pair to be reversed on one motor. The available early troubleshooting record does not identify which physical motor or coil was changed. Changing `[stepper_z]`'s `dir_pin` reverses both outputs together, not one connector independently.
@@ -396,6 +400,7 @@ The high-current bed wires remain connected to the original external MOSFET boar
 | Part-cooling fan | `FAN0` | `PB7` | `[fan]` | ✅ |
 | Hotend fan | `FAN1` | `PB6` | `[heater_fan hotend_fan]` | ✅ |
 | Mainboard/electronics fan | Not documented here yet | — | — | ⚠️ |
+
 The hotend fan is configured to start automatically when the extruder exceeds the configured threshold.
 </details>
 
