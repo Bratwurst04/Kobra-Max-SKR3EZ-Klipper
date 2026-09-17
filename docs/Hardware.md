@@ -33,8 +33,9 @@ It separates:
 | X/Y/Z motors | Original Anycubic stepper motors | ✅ |
 | Fans | Original toolhead fans | ✅ |
 | Display | Original Anycubic display | ❌ |
-| Accelerometer | Mellow FLY ADXL345 USB board | ⏳ Pending |
-| USB expansion | USB OTG hub for Raspberry Pi Zero 2 W | ⏳ |
+| Accelerometer | Mellow FLY ADXL345 USB board | ✅ Used for X/Y calibration; final mounting/configuration not captured |
+| USB expansion | USB OTG hub for Raspberry Pi Zero 2 W | ✅ Connected and working during calibration |
+| Nozzle cleaner | BBL spare cleaner mounted on the bed margin | ⚠️ Initial operation reported; final macro/height not captured |
 
 ---
 
@@ -230,6 +231,8 @@ The original Y motor is retained.
 
 The Y axis uses one motor and a two-wire endstop.
 
+In the 2026-08-02 tuning conversation I identified the photographed motor as the Y motor. Its visible model marking reads `42BYGH370L-B-89S80`. This records the physical label only; no current rating, torque specification or matching TMC Autotune model was verified from it. I did not identify the other motors as the same model.
+
 ## Z axis
 
 The original dual-Z arrangement is retained.
@@ -311,7 +314,7 @@ The Pi must communicate with:
 
 Because the Pi Zero 2 W has limited USB connectivity, a USB OTG hub is required for simultaneous use.
 
-The hub is not yet part of the fully verified hardware snapshot.
+On 2026-08-03 I reported the hub connected and working, with the accelerometer taped firmly to the printhead and its cable slack throughout X travel. X and Y calibration results followed. The hub model, port layout and final Y sensor mounting were not recorded; this establishes operation during calibration, not a long-term USB or network reliability test. See [the calibration record](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
 ---
 
@@ -449,7 +452,7 @@ Current values remain machine- and material-specific.
 
 The long Bowden tube results in a higher Pressure Advance value than a typical direct-drive system.
 
-The tube was completely disconnected for some later probe-isolation tests, and large errors persisted. Subsequent motion tests again mentioned Bowden behavior, so the whole investigation must not be labelled Bowden-free. No direct-drive conversion was reported.
+The tube was completely disconnected for some later probe-isolation tests, and large errors persisted. Subsequent motion tests again mentioned Bowden behavior, so the whole investigation must not be labelled Bowden-free. No direct-drive conversion was reported. Later skipping and filament grinding are recorded in [Issues.md](./Issues.md#intermittent-extruder-skipping-and-filament-grinding); suspected gear wear was not confirmed by inspection.
 
 ## Filament runout sensor
 
@@ -498,6 +501,26 @@ PID values are machine-specific and are not hardware specifications.
 I later reported leakage from the nozzle and up near the heatbreak and tightened the nozzle. A further hotend replacement was then reported, but tolerance failures and unstable probe coordinates remained. This was not a replacement of the LeviQ electronics or confirmation that the load-cell assembly was fault-free.
 
 The latest replacement's model, nozzle geometry and exact heater/thermistor components were not documented. The repository's existing heater configuration therefore remains the published reference, not an independently verified specification for that replacement. The final returned probing series was reported at 220 °C nozzle / 50 °C bed, but no new PID calibration, Z-offset calibration or successful post-investigation print was supplied. See [Issues.md](./Issues.md#leakage-tightening-and-a-further-hotend-replacement).
+
+### OEM replacement and silicone sock in the upgrade branch
+
+On 2026-08-07 I reported a thermistor problem and an attempted repair that was too fiddly to continue. On 2026-08-09 I reported a new OEM hotend and silicone sock, saying that it seemed to print okay. Later that day, intermittent extrusion failure was still reported. On 2026-08-14 I reported an ordered unit arriving with a "short" reading of 0.09 Ω, without identifying the measured component or test arrangement.
+
+These dated reports do not identify the model of the separate LeviQ branch's further replacement or establish which hotend was ultimately retained across branches. No exact OEM part number, final sensor specification or new PID/Z-offset record accompanies them. The earlier inventory and the unresolved cross-branch replacement status are therefore preserved. Detailed failure limits are in [Issues.md](./Issues.md#hotend-thermistor-failures-in-the-upgrade-branch).
+
+### Upgrade candidates, not installed hardware
+
+The discussion considered an original-extruder direct-drive mount, Revo, Stealthburner and alternative extruders, followed by easier-to-service V5/Volcano-style replacement hotends. The intended materials were PLA, PETG and possibly TPU. No final purchase choice or installation of these upgrades was confirmed.
+
+| Candidate | What the supplied material actually establishes | Status on this machine |
+|---|---|---|
+| Original extruder moved to direct drive | A specific [mount reference](../Useful_links.md#upgrade-comparison-reference) was discussed | Not reported printed, fitted or tested |
+| BMG-type, Redrex dual-gear kit with motor, or Super Print dual-gear extruder | Alternatives discussed after skipping/grinding; the current motor was only tentatively described as about 42 × 42 × 33 mm with an approximately 20 mm D shaft | No replacement reported installed; shaft fit, motor identity and worn gears unconfirmed |
+| HOCENWAY, ASIN `B0CM29QYN1` | Supplied listing: 24 V / 45 W, 3 mm OD NTC100K cartridge sensor, preinstalled PTFE/heater/sensor; no Beta value stated | Advertised specification only; not a confirmed installed sensor or heater |
+| Super Print All Metal V2.0, ASIN `B0DDCKWGQH` | Supplied listing: 24 V / 40 W, bi-metal heatbreak, 3 × 5.5 mm NTC100K B3950 sensor; self-assembly required | Discussed option; no confirmed purchase, assembly or print |
+| EPLZON, ASIN `B0DK746PN4` | Supplied listing selected "For Vyper"; preassembled, 0.4 mm brass nozzle; exact sensor curve and cartridge dimensions not specified | Compatibility and component details not verified on this printer |
+
+The product PDFs describe offers considered in the conversation, not measurements or fit checks. Revo/Stealthburner compatibility, retained LeviQ operation with a new mount and any performance benefit remained proposals. The existing extruder already has `gear_ratio: 3:1` in the published cfg; discussion of another geared extruder does not establish a changed ratio or calibration.
 
 ---
 
@@ -588,6 +611,14 @@ Bed geometry, gantry alignment and mesh values remain machine-specific.
 
 # Printed and modified parts
 
+## Bed-mounted nozzle cleaner
+
+On 2026-08-03 I reported mounting a spare BBL nozzle cleaner on the bed outside the print area. Its reported span was approximately X34 to X76 at Y431. At X34 Y431 Z2 I still described roughly a millimetre of clearance, so Z2 is a reported approach coordinate, not a verified wiping-contact height. No mount drawing, STL or exact cleaner model was supplied.
+
+The next reply reported that it worked after a wiping macro had been proposed. This supports initial operation only; the exact final macro and integration into `PRINT_START` were not returned. See [the snapshot distinction](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
+
+## Repository parts
+
 | Part | Purpose | Repository file |
 |---|---|---|
 | SKR adapter plate | Mounts SKR 3 EZ in electronics enclosure | [`Kobra Max SKR3 Adapter plate.stl`](./stl/Kobra%20Max%20SKR3%20Adapter%20plate.stl) |
@@ -631,12 +662,13 @@ Bed geometry, gantry alignment and mesh values remain machine-specific.
 - Printed mainboard adapter
 - Printed printhead cover
 - Klipper, Moonraker, Mainsail and KAMP
+- USB OTG hub and Mellow FLY ADXL345 used for calibration
+- Bed-mounted nozzle cleaner, with initial operation reported
+- Silicone sock reported with the 2026-08-09 OEM hotend; later assembly state not established
 
 ## Pending or optional
 
-- USB OTG hub
-- Mellow FLY ADXL345 USB integration
-- Input Shaper
+- Final saved accelerometer/Input Shaper configuration and post-calibration print validation
 - Filament runout sensor configuration
 - Optional KlipperScreen
 - Raspberry Pi and USB-hub enclosure

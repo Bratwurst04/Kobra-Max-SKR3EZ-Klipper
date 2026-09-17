@@ -473,6 +473,12 @@ With the motor disconnected from the SKR:
 
 </details>
 
+## USB accelerometer connection follow-up
+
+The 2026-08-03 report confirms the USB hub connected to the Raspberry Pi Zero 2 W and working during the Mellow FLY ADXL345 setup; X and Y calibration logs followed. This supplements the SKR USB connection without changing any mainboard pin mapping above.
+
+The exact hub model/port arrangement and final accelerometer serial identifier were not returned. The proposed accelerometer GPIO configuration is therefore not added as verified wiring. The head-mounted sensor and cable-slack report are recorded in [Hardware.md](./Hardware.md#usb-connections), and the completed calibration versus missing published cfg is explained in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
+
 ## Known wiring mistakes
 
 Several wiring faults encountered during this build produced symptoms that looked like firmware or driver failures.

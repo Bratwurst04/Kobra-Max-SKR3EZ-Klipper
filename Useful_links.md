@@ -22,6 +22,14 @@ This page collects external projects, guides and discussions used while research
 | [SmartwareIO Kobra Max mainboard and printhead kit](https://www.smartwareio.com/product/kobra-max-mainboard-and-print-head-kit/9) | Photos and description of the Kobra Max adapter approach |
 | [iFixit: Installing Klipper on SKR 3 EZ](https://www.ifixit.com/Guide/4.+Installing+Klipper+on+SKR3+EZ/152185) | SKR 3 EZ Klipper installation and firmware reference |
 
+## Upgrade comparison reference
+
+| Resource | Why it was useful |
+|---|---|
+| [Kobra Max Direct Drive Mount by Thebeatbandit](https://www.thingiverse.com/thing:5420549) | Linked in the hardware-upgrade discussion as a possible way to relocate the original extruder; not reported printed, fitted or tested on this machine |
+
+The hotend product comparisons used supplied listing PDFs. Their advertised specifications and unverified installation status are recorded in [Hardware.md](./docs/Hardware.md#upgrade-candidates-not-installed-hardware); they are not additions to the verified hardware inventory.
+
 ## Reddit discussions
 
 | Resource | Why it was useful |

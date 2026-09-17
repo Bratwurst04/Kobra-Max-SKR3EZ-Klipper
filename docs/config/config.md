@@ -40,10 +40,37 @@ The cfg files preserve a machine-specific reference, not a self-contained, immed
 | Start macro | `PRINT_START` calls `SMART_PARK` and `LINE_PURGE` | Those commands depend on the matching external KAMP setup being available |
 | Probe offset | `leviq_probe.cfg` contains only `#z_offset: 0`; no generated offset block is included | The distributed files do not supply the required effective probe offset |
 | Heater PID | Numeric PID values remain in `steppers.cfg` and `bed.cfg`, labelled as starting values | They are not absent, and are not a substitute for the machine's own calibration |
-| Optional extensions | TMC Autotune is commented out and its cfg is not bundled | Earlier installed extension files are not part of this self-contained snapshot |
+| Optional extensions | TMC Autotune is commented out and its cfg is not bundled | Download was reported; no completed autotune configuration was returned |
+| Input Shaper | No accelerometer MCU, `[adxl345]`, `[resonance_tester]` or `[input_shaper]` section is included | X/Y calibration completed in the conversation, but that live setup and saved values are absent here |
+| Nozzle cleaner | No `NOZZLE_WIPE` macro or call is present | Initial operation was reported after a proposed macro; the final applied version is not in this snapshot |
 | Later LeviQ diagnostics | Probe speed, lift, retract and sampling overrides in the returned logs differ from these files | See [published-versus-tested settings](#later-leviq-diagnostics-versus-this-snapshot); no cfg update or final reliable homing/mesh sequence is established |
 
 The required `z_offset` is confirmed by the [upstream probe reference](https://www.klipper3d.org/Config_Reference.html#probe), checked during this documentation review. No cfg file was changed and no startup test of the distributed snapshot was performed as part of this update.
+
+### Input Shaper and nozzle cleaner versus this snapshot
+
+The 2026-08-03 user-pasted calibration output records:
+
+| Axis | Recommended shaper | Frequency | Fitted smoothing | Suggested maximum acceleration to avoid excessive smoothing |
+|---|---|---:|---:|---:|
+| X | MZV | 59.2 Hz | ~0.058 | ≤10300 mm/s² |
+| Y | MZV | 26.6 Hz | ~0.288 | ≤2100 mm/s² |
+
+The console identified `/tmp/calibration_data_x_20260803_115007.csv` and `/tmp/calibration_data_y_20260803_120122.csv`. These are historical output paths; the CSV files themselves are not included in the supplied repo or readable attachments. The final Y output listed both X and Y values with `damping_ratio: 0.100000` per axis. These are fitted shaper results, not independently measured structural eigenfrequencies or validated motor/print acceleration limits.
+
+The X log said `SAVE_CONFIG` would update the configuration; that message is not confirmation that it was subsequently run. The conversation described Input Shaper as calibrated, but did not return a complete saved live cfg or a comparative print. Likewise, `max_accel: 1800` and `square_corner_velocity: 5` were suggested after calibration, not explicitly confirmed final settings. The published `printer.cfg` retains `max_accel: 3000` and no explicit `square_corner_velocity`; neither file is changed here.
+
+The proposed accelerometer file and pin example are not reproduced as an installed configuration because no complete final file was returned. Calibration success establishes that a live setup worked during those tests, not that the supplied ZIP contains it. The Y sensor relocation was instructed but its final physical mounting was not separately reported.
+
+A `NOZZLE_WIPE` macro and a revised `PRINT_START` were subsequently proposed for the [bed-mounted cleaner](../Hardware.md#bed-mounted-nozzle-cleaner). The next user reply reported success, but did not return the actual final macro or which defaults/test command were used. Initial operation is supported; exact wiping height, acceleration, pass count, restoration behavior and full start-sequence validation remain undocumented. The published `macros.cfg` has neither that macro nor its calls, and no new cfg file is supplied in this documentation package.
+
+### Extrusion and thermal reports versus this snapshot
+
+The PLA tower preference of 210–215 °C, approximate YOLO flow result of 0.985 and inconclusive 7–8 mm retraction observation belong to the [tuning history](../Journey.md#tuning-and-hardware-upgrade-follow-up). They do not replace `rotation_distance: 22.350`, `gear_ratio: 3:1` or `pressure_advance: 0.44`, and no final slicer profile is bundled here.
+
+The published hotend still uses `sensor_type: EPCOS 100K B57560G104F`. The OEM replacement report and the later product comparisons do not establish the identity/curve of the final installed sensor. An advertised NTC100K value alone is not confirmation of this exact configured sensor model. No proposed cartridge sensor, heater wattage, PID value, temperature limit or post-replacement Z offset was applied to these cfg files.
+
+Klipper-Backup activity and a separate computer/GitHub config copy were reported, but no restore test or exact backup revision was supplied. Those reports do not make this ZIP the final live backup or provide its missing host-side files.
 
 ### Host startup versus printer configuration
 
@@ -207,7 +234,7 @@ max_z_velocity: 10
 max_z_accel: 100
 ```
 
-They are working values for this machine, not *guaranteed* limits for another printer.
+These are the published snapshot values, not validated final print limits. The later Input Shaper results and the unconfirmed suggestion to lower global acceleration are recorded [above](#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
 The first X-only bring-up attempt with `kinematics: cartesian` failed because complete X/Y/Z sections were required. The subsequent early test log used 16 microsteps for X/Y, X/Y travel limits of 400, and a temporary `PC0` Z-endstop entry while homing was postponed. Those historical settings do not replace the later values in the published `steppers.cfg`, including its LeviQ virtual endstop.
 
