@@ -316,15 +316,9 @@ The Pi must communicate with:
 
 Because the Pi Zero 2 W has limited USB connectivity, a USB OTG hub is required for simultaneous use.
 
-The hub used in the 2026-08-03 calibration phase was identified in this chat as a **VBESTLIFE 4-port Micro USB 2.0 OTG charge hub**. The reported working arrangement was:
+The hub used in the 2026-08-03 calibration phase was identified in this chat as a **VBESTLIFE 4-port Micro USB 2.0 OTG charge hub**. The reported working cable and power arrangement is recorded in [Wiring.md](./Wiring.md#usb-accelerometer-connection-follow-up).
 
-- Hub fixed micro-USB plug → Raspberry Pi Zero 2 W `USB` port
-- Raspberry Pi powered separately from a wall USB supply through `PWR IN`
-- Hub USB-A → USB-B cable → SKR 3 EZ
-- Hub USB-A → USB-C cable → Mellow FLY ADXL345
-- Hub switch in position 3 during the reported working test
-
-A diagnostic capture at 11:22 CEST showed the hub as `214b:7260 Huasheng Electronics USB2.0 HUB`, with both the RP2040 accelerometer and STM32H723 SKR visible behind it. The accelerometer was taped firmly to the printhead with cable slack throughout X travel, and X/Y calibration results followed.
+Both the RP2040 accelerometer and STM32H723 SKR were visible through the hub during setup. The accelerometer was taped firmly to the printhead with cable slack throughout X travel, and X/Y calibration results followed. The USB identities and firmware-state diagnosis are recorded in [Issues.md](./Issues.md#fly-adxl-enumerated-as-katapult-instead-of-a-klipper-mcu).
 
 Later hot-plugging the ADXL was followed by a USB-enumeration failure where only the hub remained visible. A full power cycle restored operation according to the user report; that sequence is documented as a workaround, not a proven permanent cause/fix. The final Y sensor mounting and exact long-term hub/power arrangement were not established in this branch. See [the USB issue record](./Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug) and [the calibration record](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
@@ -453,14 +447,14 @@ The reset sequence is documented in:
 
 The original Bowden extruder is retained.
 
-Current verified features:
+Hardware and calibration represented by the published snapshot:
 
 - Original extruder motor
 - 3:1 gear ratio
 - Calibrated `rotation_distance`
 - Pressure Advance configured for the tested filament setup
 
-Current values remain machine- and material-specific.
+These calibration values belong to the earlier tested setup and remain machine- and material-specific. Later Bowden/hotend/sensor changes require retuning as described below.
 
 The long Bowden tube results in a higher Pressure Advance value than a typical direct-drive system.
 

@@ -247,7 +247,7 @@ A separate wire bonds the X gantry to the chassis. It is listed below for comple
   <summary><h3>X harness motors</h3></summary>
   
 #### Extruder motor inside X harness
-The first motor group in the X harness belongs to the Bowden extruder motor.Connect this group to `E0M`.
+The first motor group in the X harness belongs to the Bowden extruder motor. Connect this group to `E0M`.
 
 | Original wire | E0 motor pin |
 |---|---|
@@ -401,7 +401,7 @@ The high-current bed wires remain connected to the original external MOSFET boar
 | Hotend fan | `FAN1` | `PB6` | `[heater_fan hotend_fan]` | ✅ |
 | Mainboard/electronics fan | Not documented here yet | — | — | ⚠️ |
 
-The hotend fan is configured to start automatically when the extruder exceeds the configured threshold.
+The hotend fan runs when the extruder has a nonzero target or its measured temperature is above `heater_temp` (50 °C in this snapshot), including during cooldown.
 </details>
 
 ---
@@ -439,7 +439,7 @@ The wires were moved into new connector housings supplied with the SKR board, an
 - Verify each motor coil pair with a multimeter
 - Do not rely on wire colour; the original harness uses only black wires
 
-A (older version) of [this](https://niimbots.com/products/d110-portable-wireless-connect-rechargeable-mini-label-printer-with-tape?variant=43704982470892)<sup> *(NIIMBOT D110)* </sup> was used during this build because the harness becomes basically impossible to identify once multiple wires have been removed from their housing.
+An older version of [this](https://niimbots.com/products/d110-portable-wireless-connect-rechargeable-mini-label-printer-with-tape?variant=43704982470892)<sup> *(NIIMBOT D110)* </sup> was used during this build because the harness becomes basically impossible to identify once multiple wires have been removed from their housing.
 
 #### Stepper motors
 With the motor disconnected from the SKR:
@@ -487,7 +487,7 @@ The hub used in that phase was identified as a **VBESTLIFE 4-port Micro USB 2.0 
 | Accelerometer | Hub USB-A → USB-C → Mellow FLY ADXL345 | ✅ RP2040 visible through the hub and later used for calibration |
 | Hub switch | Position 3 | ✅ Working state reported; no comparison proved this position uniquely required |
 
-The first diagnostic capture showed `214b:7260 Huasheng Electronics USB2.0 HUB`, `1d50:6177 ... rp2040` and `1d50:614e ... stm32h723xx` on the same USB tree. A later hot-plug episode left only the hub enumerated until a full power cycle. That recovery is recorded in [Issues.md](./Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug); it is not treated as proof that hot-plugging was the sole cause.
+Both controllers were observed through the hub during setup. A later USB failure after ADXL hot-plug recovered after a full power cycle. The detailed observations and their limits are recorded in [Issues.md](./Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug); the recovery does not prove that hot-plugging was the sole cause.
 
 The final accelerometer serial identifier and complete final `adxl.cfg` were not returned. The head-mounted sensor and cable-slack report are recorded in [Hardware.md](./Hardware.md#usb-connections), and the completed calibration versus missing published cfg is explained in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
@@ -525,4 +525,4 @@ Additional board diagrams, source projects and documentation are listed in [`Use
 > If I have missed something, or you wonder something that isn't in this repository, reach out and I can see if I can help
 
 > [!Note]
-> Since English isn't my first language, I have used an LLM to summarize, translate and structurize a lot of my findings. 
+> Since English isn't my first language, I have used an LLM to summarize, translate and structure a lot of my findings.

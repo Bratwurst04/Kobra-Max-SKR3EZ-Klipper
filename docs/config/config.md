@@ -67,7 +67,7 @@ The X log said `SAVE_CONFIG` would update the configuration; that message is not
 
 The proposed accelerometer file and pin example are not reproduced as an installed configuration because no complete final file was returned. Calibration success establishes that a live setup worked during those tests, not that the supplied ZIP contains it. The Y sensor relocation was instructed but its final physical mounting was not separately reported.
 
-The USB bring-up also exposed a firmware-state distinction that is not visible in this snapshot. At 11:22 CEST the hub enumerated both the SKR and RP2040, but `/dev/serial/by-id/` showed the accelerometer controller as `usb-katapult_rp2040_12345-if00`, and the live `adxl.cfg` pointed `[mcu adxl]` at that path. Klippy logged `mcu 'adxl': Timeout on connect` and `mcu 'adxl': Wait for identify_response`. After flashing Klipper to the FLY RP2040, a successful `ACCELEROMETER_QUERY` was reported with values `4441.235652, 666.185348, -8656.879127`, after which the resonance-calibration work proceeded. This verifies the live MCU/sensor path for that session without supplying the missing final serial identifier or complete `adxl.cfg`.
+During USB bring-up, the live `adxl.cfg` initially referenced the FLY RP2040's Katapult bootloader identity. Flashing Klipper was followed by a successful accelerometer query and calibration. This verified that session's MCU/sensor path, but the final serial identifier and complete `adxl.cfg` are not included here. See [the firmware-state troubleshooting record](../Issues.md#fly-adxl-enumerated-as-katapult-instead-of-a-klipper-mcu) for the diagnostic logs.
 
 A later hot-plug episode temporarily removed both downstream MCUs from `/dev/serial/by-id/` while the USB hub itself remained visible; a full power cycle restored operation according to the report. That host/USB failure is documented in [Issues.md](../Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug), not encoded as a configuration change here.
 
@@ -211,13 +211,14 @@ This block may contain:
 
 The generated block was removed from the repository so another printer does not inherit calibration values from this machine. This does not remove all numeric calibration-related settings: heater PID starting values remain in the ordinary sections, as detailed below. The omitted probe offset also means the published files alone lack a required value.
 
-Run the required calibrations and use:
+`SAVE_CONFIG` can persist calibration results in the main `printer.cfg`, but it does not automatically overwrite values in included files. In this snapshot, both `steppers.cfg` and `bed.cfg` already define `control: pid` and all three PID coefficients. After `PID_CALIBRATE`, those fields conflict with the pending saved values; Klipper [rejects the save](https://github.com/Klipper3d/klipper/blob/72b3cdb4e4dce4b65b6cd3751963dad0bbc713e2/klippy/configfile.py#L329-L371) while the included definitions remain active.
 
-```gcode
-SAVE_CONFIG
-```
+For each calibrated heater, choose one persistence method:
 
-to generate your own values.
+- Record the returned PID coefficients, manually replace the corresponding values in its included cfg file, and restart to load them. This method does not use `SAVE_CONFIG` for those PID results.
+- To use the generated block instead, complete calibration first, then comment out the calibrated heater's `control`, `pid_Kp`, `pid_Ki` and `pid_Kd` entries in its included file and run `SAVE_CONFIG` **before restarting**. Do not remove required PID fields and restart before replacement values have been saved.
+
+The same include-conflict rule applies to other calibration fields defined in included files. This documents the persistence choices; the supplied heater structure and values remain unchanged.
 
 ### NOTE
 > If I mistakenly don't remove the generated block, it's *still* printer specific
@@ -280,7 +281,7 @@ Do **not** change stepper connector wiring while the printer is powered.
 
 ### Extruder calibration
 
-The included values are calibrated for the current original Bowden extruder:
+The included values describe the earlier calibrated Bowden/extrusion setup captured in the published snapshot:
 
 ```ini
 rotation_distance: 22.350
@@ -288,7 +289,7 @@ gear_ratio: 3:1
 pressure_advance: 0.44
 ```
 
-Treat them as a starting point only.
+Treat them as historical reference values; later Bowden, hotend and sensor changes reopened calibration, as described [above](#extrusion-and-thermal-reports-versus-this-snapshot).
 
 Recalibrate:
 
@@ -311,7 +312,9 @@ max_temp: 280
 min_extrude_temp: 170
 ```
 
-These are Klipper safety limits, not normal operating temperatures.
+`max_temp` is an upper heater protection limit and also bounds accepted target temperatures. The configured `280` therefore permits targets up to 280 °C; it does not enforce the 260 °C operating limit cited in the cfg comment. `min_extrude_temp` is the minimum temperature at which extrusion is permitted.
+
+Normal intended printing temperatures depend on the material and process. The actual component limit must be verified for the installed hotend assembly; its final heater, sensor and heatbreak are not fully identified here. The published software limit is not evidence that those components are rated for 280 °C.
 
 `min_temp: 18` may be too high for a cold garage or workshop and can prevent Klipper from starting.
 
@@ -341,7 +344,7 @@ The early test log used `run_current: 0.80` for X/Y and `0.90` for Z with `steal
 
 A still later live experiment moved to roughly 0.80 A X, 0.90 A Y, 0.80 A Z and 0.80 A extruder, removed the separate hold-current settings, used 64 microsteps on X/Y and 32 on Z/E, and ended with interpolation enabled on X/Y but disabled on Z/E. X/Y interpolation had briefly been disabled when a high-pitched motor sound was noticed. The later values were used during aggressive acceleration testing but were not returned as a complete final cfg snapshot, so the files distributed here remain unchanged.
 
-The same testing reached about 90,000 mm/s² at a 200 mm/s slicer speed cap before Y skipped steps at 100,000 mm/s². That is a short limit-finding result, not a quality recommendation or a replacement for the much lower Input Shaper smoothing guidance.
+The same testing requested about 90,000 mm/s² at a 200 mm/s slicer speed cap with no obvious step loss reported; Y skipped when the requested acceleration increased to 100,000 mm/s². Actual acceleration was not measured. This is a short limit-finding result, not a quality recommendation or a replacement for the much lower Input Shaper smoothing guidance.
 
 The configured UART pins are verified for the current SKR layout:
 
@@ -369,9 +372,9 @@ min_temp: 18
 max_temp: 100
 ```
 
-The original Anycubic operating limit is lower than the configured Klipper shutdown limit.
+The cfg comment cites an original Anycubic operating limit of 90 °C. The configured `max_temp: 100` is an upper heater protection limit and also permits targets up to 100 °C; it does not enforce a separate 90 °C target ceiling.
 
-The configured maximum is intended as a fault cutoff, not a target temperature.
+The normal intended bed temperature must be chosen within the verified limits of the installed bed and related components. The published software maximum is not a recommended operating target or proof of a 100 °C component rating.
 
 As with the extruder, `min_temp: 18` may be unsuitable in a cold environment.
 
