@@ -1004,9 +1004,15 @@ I reported downloading Klipper-Backup and TMC Autotune, then reported placing a 
 
 ## USB hub and X/Y Input Shaper, 2026-08-03
 
-The hub arrived and I reported it working, with the Mellow FLY ADXL345 taped firmly to the printhead and enough cable slack across X travel. An unavailable dependency package initially blocked setup. After the revised instructions I reported OK, then supplied separate X and Y calibration logs.
+The hub arrived and I reported it working, with the Mellow FLY ADXL345 taped firmly to the printhead and enough cable slack across X travel. The hub used in this phase was later identified in the same chat as a VBESTLIFE 4-port Micro USB 2.0 OTG charge hub. The Pi was separately powered through `PWR IN`, while the hub's fixed micro-USB plug used the Pi `USB` port; USB-A→USB-B went to the SKR and USB-A→USB-C to the FLY board. Switch position 3 was the reported working setting.
+
+The first USB diagnostic capture at 11:22 CEST showed the hub plus both downstream devices: `1d50:6177 ... rp2040` and `1d50:614e ... stm32h723xx`. However, the RP2040 appeared under `/dev/serial/by-id/` as `usb-katapult_rp2040_12345-if00`, and the live `adxl.cfg` pointed `[mcu adxl]` at that path. Klippy then logged `mcu 'adxl': Timeout on connect` and `mcu 'adxl': Wait for identify_response`. This narrowed the immediate problem to the accelerometer firmware state rather than a missing USB data path. After the FLY board was flashed with Klipper, I reported a successful `ACCELEROMETER_QUERY` with non-zero X/Y/Z values, and setup proceeded. The exact post-flash serial identifier and full final `adxl.cfg` were not returned.
+
+An unavailable dependency package also blocked the resonance-analysis setup. After the revised dependency instructions I reported OK, then supplied separate X and Y calibration logs.
 
 The logs recommended MZV at 59.2 Hz for X and 26.6 Hz for Y. They establish completed analysis, including both values in the final Y output. The full results and the distinction between smoothing estimates, saved configuration and tested printing limits are kept in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
+
+After the calibration window, hot-plugging the ADXL was followed by a USB-enumeration failure. Diagnostic captures at 12:19 and 12:49 CEST showed only the root hub and `214b:7260 Huasheng Electronics USB2.0 HUB`; `/dev/serial/by-id/` was absent, and the kernel repeatedly logged `device descriptor read/64, error -71`, `device not accepting address` and `unable to enumerate USB device`. I then reported that operation returned after a full power cycle and suspected the ADXL hot-plug sequence. That temporal link is preserved as the observed history, not as a proven root cause.
 
 I explicitly said I had not yet test-printed immediately after calibration. A later "it works" reply followed the cleaner discussion, and referred to Input Shaper as calibrated; it did not provide a before/after ringing comparison or a captured final saved cfg. The later OEM-hotend print report did not supply that comparison either.
 
