@@ -460,16 +460,18 @@ after measuring the practical bed centre. A new warm Z-offset was also reported.
 
 ### Later LeviQ diagnostics versus this snapshot
 
-**Status: published values preserved; live diagnostic overrides only partly documented.** The later branch reopened probe repeatability and Z homing. Its single-point successes do not make this directory a validated final fix.
+**Status: published values preserved; branch-specific live settings and console overrides are documented separately.** The later branch reopened probe repeatability and Z homing. Its single-point successes do not make this directory a validated final fix.
+
+The troubleshooting handover described the then-current probe configuration approximately as `speed: 1`, `lift_speed: 5`, `samples: 3`, median sampling, `sample_retract_dist: 1`, `samples_tolerance: 0.03`, `samples_tolerance_retries: 4`, with a 200 ms LOW reset pulse followed by a 700 ms post-HIGH wait. Those values differ from the cfg snapshot published here and were later overridden explicitly in many console tests.
 
 | Item | Published snapshot | Evidence from the later troubleshooting branch |
 |---|---|---|
-| Probe input and reset | `^!PB15` and `PB14` | No replacement pin mapping or completed rewiring was reported |
-| Probe speed | `speed: 3` | Returned isolated-contact tests explicitly used `PROBE_SPEED=0.5` |
-| Lift speed | `lift_speed: 5` | Both `LIFT_SPEED=5` and `LIFT_SPEED=2` appear in logs; the final warm series used 2 |
-| Retract distance | `sample_retract_dist: 5` | Diagnostic commands explicitly used `SAMPLE_RETRACT_DIST=1` |
-| Sampling | 2 samples, median, tolerance 0.05, 3 retries | The opening handover described a different working setup; the isolated-contact logs explicitly override `SAMPLES=1`. Later retry logs do not establish the full active sampling configuration |
-| Reset sequence | LOW 100 ms, then HIGH and 600 ms wait | The handover described 200/700 ms and several unsuccessful timing variants; a returned reset-only control explicitly used 200/700 ms. The last live `activate_gcode` body is not established by the probe-result lines |
+| Probe input and reset | `^!PB15` and `PB14` | The handover retained the same mapping; no replacement pin mapping or completed rewiring was reported |
+| Probe speed | `speed: 3` | The handover described approximately `speed: 1`; returned isolated-contact tests explicitly used `PROBE_SPEED=0.5` |
+| Lift speed | `lift_speed: 5` | The handover also described 5; both `LIFT_SPEED=5` and `LIFT_SPEED=2` appear in logs, and the final warm series used 2 |
+| Retract distance | `sample_retract_dist: 5` | The handover described 1 mm; diagnostic commands explicitly used `SAMPLE_RETRACT_DIST=1` |
+| Sampling | 2 samples, median, tolerance 0.05, 3 retries | The handover described approximately 3 samples, median, tolerance 0.03 and 4 retries; isolated-contact logs explicitly override `SAMPLES=1`. Later retry logs do not establish one final active sampling setup |
+| Reset sequence | LOW 100 ms, then HIGH and 600 ms wait | The handover described LOW 200 ms, then HIGH and 700 ms wait. Several timing variants failed to eliminate the fault, and the returned reset-only control explicitly used 200/700 ms |
 | Safe Z home | X200 Y200, hop 10 mm at 5 mm/s | Diagnostic contacts used X200 Y200 and several other points. Suggested changed hop/homing settings were not returned as a complete confirmed final cfg |
 | Z homing in `steppers.cfg` | First speed 5, second speed 2 mm/s; retract distance 3 mm | Later false-trigger/failed-homing reports reopened reliability. No final successful homing sequence after the speed investigation was supplied |
 | Z motion limits | `max_z_velocity: 10`, `max_z_accel: 100`; global `max_accel: 3000` | A dashboard value of 10000 was reported during acceleration tests, not a captured new Z-axis limit. High requested feedrates alone do not establish attained Z speeds |
@@ -532,10 +534,19 @@ PRINT_START BED=[bed_temperature_initial_layer_single] EXTRUDER=[nozzle_temperat
 
 ### Temperature sequencing and later reports
 
-The published `PRINT_START` contains `M104 S150` before homing and `M109 S{EXTRUDER}` after `SMART_PARK`. It does not contain a pre-probing `M109 S150` / `G4 P2000` sequence. That alternative was described in the troubleshooting conversation, but a complete readable updated live macro was not available for this review; it is not recorded here as a confirmed change to the supplied snapshot.
+The published `PRINT_START` contains `M104 S150` before homing and `M109 S{EXTRUDER}` after `SMART_PARK`. It does not contain a pre-probing `M109 S150` / `G4 P2000` sequence.
+
+The separate live snapshot `config(1).zip`, attached earlier in this troubleshooting chat and inspected there, contained `M109 S150` followed by `G4 P2000` before the second Z home. That is a branch-specific live-machine difference from the cfg files published in this repository. Its exact ordering relative to the later documentation branches is not established, so this documentation records the divergence without silently replacing `macros.cfg`.
 
 The opening handover also reported `extruder not hot enough` after some failed KAMP/mesh attempts. Continuing toward purge was a suspected secondary issue, not a demonstrated control-flow diagnosis or completed macro fix. No cfg or macro was changed in this documentation update.
 
+### Proposed temporary saved-mesh fallback
+
+While the LeviQ root cause remained unresolved, a temporary printability workaround was discussed. The proposed full-bed reserve mesh used **10 samples per point**, median sampling, `PROBE_SPEED=0.5`, `SAMPLE_RETRACT_DIST=1`, `LIFT_SPEED=5`, `SAMPLES_TOLERANCE=0.03` and a substantially higher retry allowance, with 20 retries used as the example. The intended normal-print path was then to load that saved profile instead of requiring a fresh adaptive KAMP mesh on every start.
+
+The purpose of the higher retry count was to give a point more chances to settle while still rejecting a large spread. Simply increasing `samples_tolerance` enough to accept the observed 0.1–0.5 mm or larger shifts was explicitly not the preferred workaround because it could preserve bad measurements in the mesh.
+
+No returned log or updated cfg showed that this reserve profile, the example `TEMP_SAFE` name, ten-sample settings, or an automatic fallback from a failed KAMP calibration to the saved mesh was actually applied. They are therefore documented as a proposal only. The supplied KAMP component source is also not present in this repo snapshot, so this review does not claim how that external wrapper handles every runtime probe parameter.
 
 A later position-loss issue changed pause/cancel behavior outside this snapshot. After skipped XY steps, an absolute park toward the far corner could crash because the logical and physical positions no longer matched. A custom pause/cancel/crash-abort approach was reported as much better, but the final macro body was not returned and is therefore not recreated here.
 
