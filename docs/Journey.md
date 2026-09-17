@@ -934,6 +934,12 @@ A first finger press on the bed was followed by a changed B value, but B had not
 
 An upward load on the nozzle without bed contact shifted the next reading more than a separate load on the rigid carriage/body. That kept the local hotend/load-cell assembly under suspicion, but the forces were not calibrated and these were not repeated isolation experiments. A further proposed test directly on the moving load-cell mount was not reported as completed.
 
+## A temporary printing fallback was discussed, not verified
+
+The next turn did not report the proposed load-cell-mount isolation test as completed. I instead asked whether the printer could remain usable while the root cause stayed open. The proposed temporary path was to create a saved full-bed mesh with many samples and retries while keeping a relatively strict sample tolerance, then load that stored profile for normal prints instead of depending on a fresh adaptive KAMP mesh at every start.
+
+The discussion explicitly avoided treating a very large `samples_tolerance` as a fix, because accepting the intermittent large shifts would only hide the fault inside the mesh. No returned log or updated cfg showed that a ten-sample mesh, higher retry count, saved `TEMP_SAFE` profile or automatic KAMP-to-saved-mesh fallback was actually created or used. This remained a proposed workaround rather than a verified print result.
+
 ## A leaking hotend was not the whole explanation
 
 I reported leakage at the nozzle and near the heatbreak and tightened the nozzle. The investigation then focused heavily on that joint. However, separate X200 Y200 contacts starting from Z2 still switched between very different trigger coordinates, and large changes also occurred before I had performed the proposed additional manual nozzle push.

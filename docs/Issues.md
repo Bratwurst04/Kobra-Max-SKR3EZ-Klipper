@@ -241,9 +241,10 @@ There was no confirmed clean/unloaded-nozzle comparison, paired heat/cool cycle 
 - A further hotend replacement did not remove the problem. Bowden removal, reset-timing changes and the manual load tests narrowed possibilities without identifying a unique component.
 - The speed-associated LED symptom is documented separately from the intermittent coordinate shifts. Neither EMI nor mechanical resonance was confirmed as their common cause.
 - Slow diagnostic probing produced one very tight warm series, not a validated final configuration. No completed final homing, multi-point mesh or print was returned after it.
+- A temporary printing workaround was discussed: build a saved full-bed mesh with many samples/retries and a strict tolerance, then load that profile instead of relying on a fresh KAMP mesh at every start. No returned log or cfg showed that this was actually applied, and simply widening the tolerance enough to accept the large shifts was not treated as a valid fix.
 - Later homing-speed suggestions, a permanent 2 mm/s lift configuration, electrical filters, motor-current changes and additional temperature comparisons were not established as applied final fixes. The published cfg files remain unchanged.
 
-For the sequence of changing hypotheses, see [Journey.md](./Journey.md#leviq-follow-up-from-this-troubleshooting-branch). For the actual published values and verified command overrides, see [Configuration](./config/config.md#later-leviq-diagnostics-versus-this-snapshot).
+For the sequence of changing hypotheses, see [Journey.md](./Journey.md#leviq-follow-up-from-this-troubleshooting-branch). For the actual published values, live-snapshot differences and verified command overrides, see [Configuration](./config/config.md#later-leviq-diagnostics-versus-this-snapshot).
 
 </details>
 
