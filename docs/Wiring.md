@@ -477,7 +477,19 @@ With the motor disconnected from the SKR:
 
 The 2026-08-03 report confirms the USB hub connected to the Raspberry Pi Zero 2 W and working during the Mellow FLY ADXL345 setup; X and Y calibration logs followed. This supplements the SKR USB connection without changing any mainboard pin mapping above.
 
-The exact hub model/port arrangement and final accelerometer serial identifier were not returned. The proposed accelerometer GPIO configuration is therefore not added as verified wiring. The head-mounted sensor and cable-slack report are recorded in [Hardware.md](./Hardware.md#usb-connections), and the completed calibration versus missing published cfg is explained in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
+The hub used in that phase was identified as a **VBESTLIFE 4-port Micro USB 2.0 OTG charge hub**. The reported working cable layout was:
+
+| Connection | Reported cable/path | Verification status |
+|---|---|---|
+| Pi host/data | Hub fixed micro-USB male → Pi Zero 2 W `USB` port | ✅ Both downstream MCUs later enumerated through the hub |
+| Pi power | Wall USB supply → Pi `PWR IN` | ✅ Reported during hub troubleshooting |
+| SKR | Hub USB-A → USB-B → SKR 3 EZ | ✅ `stm32h723xx` visible through the hub |
+| Accelerometer | Hub USB-A → USB-C → Mellow FLY ADXL345 | ✅ RP2040 visible through the hub and later used for calibration |
+| Hub switch | Position 3 | ✅ Working state reported; no comparison proved this position uniquely required |
+
+The first diagnostic capture showed `214b:7260 Huasheng Electronics USB2.0 HUB`, `1d50:6177 ... rp2040` and `1d50:614e ... stm32h723xx` on the same USB tree. A later hot-plug episode left only the hub enumerated until a full power cycle. That recovery is recorded in [Issues.md](./Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug); it is not treated as proof that hot-plugging was the sole cause.
+
+The final accelerometer serial identifier and complete final `adxl.cfg` were not returned. The head-mounted sensor and cable-slack report are recorded in [Hardware.md](./Hardware.md#usb-connections), and the completed calibration versus missing published cfg is explained in [Configuration](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
 ## Known wiring mistakes
 

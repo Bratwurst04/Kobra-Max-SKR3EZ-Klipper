@@ -28,6 +28,8 @@ The goal is not only to list the final fix, but also to preserve the symptoms th
 | [Pause/cancel after skipped XY steps](#pause-or-cancel-could-crash-after-skipped-xy-steps) | Parking move headed toward the far X/Y corner after position was lost | Custom pause/cancel behavior reduced the risk; exact final macro not captured |
 | [High-flow thermal shutdown](#temperature-loss-during-the-max-flow-trial) | Shutdown around 22 mm³/s despite acceptable-looking output | Thermal limit encountered; missing sock suspected, no controlled retest |
 | [Input Shaper package setup](#input-shaper-dependency-installation) | `libatlas-base-dev` had no installation candidate | Setup subsequently reported OK and calibration completed |
+| [FLY ADXL in Katapult mode](#fly-adxl-enumerated-as-katapult-instead-of-a-klipper-mcu) | RP2040 was visible over USB but Klipper stayed in `STARTUP` waiting for `mcu adxl` | Flash Klipper to the FLY RP2040; sensor query then succeeded |
+| [USB hub lost downstream MCUs](#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug) | Hub remained visible while both SKR and ADXL disappeared from USB/by-id | Full power cycle restored operation; hot-plug link observed, exact cause unproven |
 | SD flashing confirmation | `firmware.bin` remains unchanged | Klipper USB identity and later MCU communication verified; SD rename cause unresolved |
 | Missing Klippy dependency | Service exits before `klippy.log` is created | Restore the Klippy virtual environment's Python dependencies |
 | Raspberry Pi hard power loss | Old IP replies but SSH and Moonraker refuse connections | Reinstallation restored access; corruption and responder identity were not established |
@@ -630,6 +632,82 @@ Error: Package 'libatlas-base-dev' has no installation candidate
 ```
 
 The follow-up instructions omitted that unavailable package, retained `libopenblas-dev`, and offered an additional Python-environment installation only if imports still failed. I replied that it now returned OK; X and Y shaper-calibration logs followed. The record does not identify which fallback, if any, was needed or capture a complete package/version inventory. This documents the successful recovery, not a universal installation command or an assertion that every proposed step was executed.
+
+## FLY ADXL enumerated as Katapult instead of a Klipper MCU
+
+**Status: resolved for the reported calibration session; exact final serial identifier/config file not captured.**
+
+### Symptoms
+
+The OTG hub and both USB devices were visible, so the initial failure did not look like a dead cable or missing downstream USB connection. The 11:22 CEST diagnostic capture showed:
+
+```text
+214b:7260 Huasheng Electronics USB2.0 HUB
+1d50:6177 OpenMoko, Inc. rp2040
+1d50:614e OpenMoko, Inc. stm32h723xx
+```
+
+However, `/dev/serial/by-id/` identified the accelerometer-side RP2040 as:
+
+```text
+usb-katapult_rp2040_12345-if00
+```
+
+and the live `adxl.cfg` used that path for `[mcu adxl]`. Klippy then reported:
+
+```text
+mcu 'adxl': Timeout on connect
+mcu 'adxl': Wait for identify_response
+```
+
+### Cause
+
+The observed USB identity showed the FLY RP2040 presenting its Katapult bootloader path rather than responding as the Klipper MCU expected by `[mcu adxl]`. The working USB tree therefore did not by itself prove that usable Klipper firmware was running on the accelerometer controller.
+
+### Fix
+
+Klipper firmware was built/flashed for the Mellow FLY RP2040 board. The repository does not contain the resulting live `adxl.cfg` or the final post-flash `/dev/serial/by-id/` string, so those details are not reconstructed here.
+
+### Verification
+
+After flashing, I reported a successful sensor query:
+
+```text
+accelerometer values (x, y, z): 4441.235652, 666.185348, -8656.879127
+```
+
+Separate X and Y shaper-calibration logs followed later in the same dated tuning sequence. This verifies a working accelerometer path for that session, while the missing final cfg remains a documentation limitation.
+
+## USB hub lost both downstream MCUs after ADXL hot-plug
+
+**Status: recovered by full power cycle; exact root cause unproven.**
+
+### Symptoms
+
+After an ADXL hot-plug sequence, Klipper could no longer open the configured SKR serial path. Two later USB diagnostic captures showed only:
+
+```text
+Linux Foundation 2.0 root hub
+214b:7260 Huasheng Electronics USB2.0 HUB
+```
+
+Neither the SKR nor ADXL appeared behind the hub, and `/dev/serial/by-id/` did not exist. The kernel repeatedly reported errors including:
+
+```text
+device descriptor read/64, error -71
+device not accepting address
+unable to enumerate USB device
+```
+
+The 12:49 capture also reported `throttled=0x0`. That value is preserved as an observation only; it is not treated here as proof that every aspect of hub or Pi power was healthy.
+
+### Likely cause / limitation
+
+The failure followed hot-plugging the ADXL and affected both downstream MCUs while the hub itself remained enumerated. This is consistent with a hub/downstream USB enumeration failure, but the available evidence does not prove whether the trigger was hot-plug timing, the hub, a cable/contact, device power state or another USB-layer condition.
+
+### Workaround and verification
+
+I reported that a full power cycle restored operation and suspected that the ADXL hot-plug had left the setup in the bad state. The later calibration history establishes that the hub could operate with both controllers connected, but no repeated hot-plug endurance test or permanent hardware change was documented.
 
 ## Klippy exited before creating its log
 

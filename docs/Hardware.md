@@ -34,7 +34,7 @@ It separates:
 | Fans | Original toolhead fans | ✅ |
 | Display | Original Anycubic display | ❌ |
 | Accelerometer | Mellow FLY ADXL345 USB board | ✅ Used for X/Y calibration; final mounting/configuration not captured |
-| USB expansion | USB OTG hub for Raspberry Pi Zero 2 W | ✅ Connected and working during calibration |
+| USB expansion | VBESTLIFE 4-port Micro USB 2.0 OTG charge hub | ✅ Used during calibration; later hot-plug enumeration fault recovered by power cycle |
 | Nozzle cleaner | BBL spare cleaner mounted on the bed margin | ⚠️ Initial operation reported; final macro/height not captured |
 
 ---
@@ -281,6 +281,8 @@ During early testing, the Pi was powered through the printer/SKR arrangement.
 
 This caused the Pi to lose power every time the printer was switched off.
 
+During the later USB-hub/accelerometer phase, the reported test arrangement instead powered the Pi from a wall USB supply through `PWR IN`, while the Pi's `USB` port was used for the OTG hub. That later arrangement is a documented test setup, not proof of the final long-term power architecture after the separate network follow-up.
+
 Repeated hard shutdowns were followed by a host failure where:
 
 - Ping still worked
@@ -314,7 +316,17 @@ The Pi must communicate with:
 
 Because the Pi Zero 2 W has limited USB connectivity, a USB OTG hub is required for simultaneous use.
 
-On 2026-08-03 I reported the hub connected and working, with the accelerometer taped firmly to the printhead and its cable slack throughout X travel. X and Y calibration results followed. The hub model, port layout and final Y sensor mounting were not recorded; this establishes operation during calibration, not a long-term USB or network reliability test. See [the calibration record](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
+The hub used in the 2026-08-03 calibration phase was identified in this chat as a **VBESTLIFE 4-port Micro USB 2.0 OTG charge hub**. The reported working arrangement was:
+
+- Hub fixed micro-USB plug → Raspberry Pi Zero 2 W `USB` port
+- Raspberry Pi powered separately from a wall USB supply through `PWR IN`
+- Hub USB-A → USB-B cable → SKR 3 EZ
+- Hub USB-A → USB-C cable → Mellow FLY ADXL345
+- Hub switch in position 3 during the reported working test
+
+A diagnostic capture at 11:22 CEST showed the hub as `214b:7260 Huasheng Electronics USB2.0 HUB`, with both the RP2040 accelerometer and STM32H723 SKR visible behind it. The accelerometer was taped firmly to the printhead with cable slack throughout X travel, and X/Y calibration results followed.
+
+Later hot-plugging the ADXL was followed by a USB-enumeration failure where only the hub remained visible. A full power cycle restored operation according to the user report; that sequence is documented as a workaround, not a proven permanent cause/fix. The final Y sensor mounting and exact long-term hub/power arrangement were not established in this branch. See [the USB issue record](./Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug) and [the calibration record](./config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot).
 
 ---
 

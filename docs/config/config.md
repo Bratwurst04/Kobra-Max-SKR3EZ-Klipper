@@ -67,6 +67,10 @@ The X log said `SAVE_CONFIG` would update the configuration; that message is not
 
 The proposed accelerometer file and pin example are not reproduced as an installed configuration because no complete final file was returned. Calibration success establishes that a live setup worked during those tests, not that the supplied ZIP contains it. The Y sensor relocation was instructed but its final physical mounting was not separately reported.
 
+The USB bring-up also exposed a firmware-state distinction that is not visible in this snapshot. At 11:22 CEST the hub enumerated both the SKR and RP2040, but `/dev/serial/by-id/` showed the accelerometer controller as `usb-katapult_rp2040_12345-if00`, and the live `adxl.cfg` pointed `[mcu adxl]` at that path. Klippy logged `mcu 'adxl': Timeout on connect` and `mcu 'adxl': Wait for identify_response`. After flashing Klipper to the FLY RP2040, a successful `ACCELEROMETER_QUERY` was reported with values `4441.235652, 666.185348, -8656.879127`, after which the resonance-calibration work proceeded. This verifies the live MCU/sensor path for that session without supplying the missing final serial identifier or complete `adxl.cfg`.
+
+A later hot-plug episode temporarily removed both downstream MCUs from `/dev/serial/by-id/` while the USB hub itself remained visible; a full power cycle restored operation according to the report. That host/USB failure is documented in [Issues.md](../Issues.md#usb-hub-lost-both-downstream-mcus-after-adxl-hot-plug), not encoded as a configuration change here.
+
 A `NOZZLE_WIPE` macro and a revised `PRINT_START` were subsequently proposed for the [bed-mounted cleaner](../Hardware.md#bed-mounted-nozzle-cleaner). The next user reply reported success, but did not return the actual final macro or which defaults/test command were used. Initial operation is supported; exact wiping height, acceleration, pass count, restoration behavior and full start-sequence validation remain undocumented. The published `macros.cfg` has neither that macro nor its calls, and no new cfg file is supplied in this documentation package.
 
 ### Extrusion and thermal reports versus this snapshot
