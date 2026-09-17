@@ -24,10 +24,10 @@ It separates:
 | Mainboard MCU | STM32H723 | ✅ |
 | Stepper drivers | 4 × BTT EZ2209 v1.1 | ✅ |
 | Host computer | Raspberry Pi Zero 2 W | ✅ |
-| Toolhead probe | Original Anycubic LeviQ strain gauge | ✅ |
+| Toolhead probe | Original Anycubic LeviQ strain gauge | ⚠️ Retained; repeatability/homing reopened |
 | Logic conversion | 4-channel bidirectional 3.3 V ↔ 5 V level shifter | ✅ |
 | Extruder | Original Bowden extruder | ✅ |
-| Hotend | Original-style replacement hotend | ✅ |
+| Hotend | Replacement hotend; latest model not documented | ⚠️ Further replacement reported; final recalibration unverified |
 | Heated bed | Original Anycubic heated bed | ✅ |
 | Bed power stage | Original external bed MOSFET | ✅ |
 | X/Y/Z motors | Original Anycubic stepper motors | ✅ |
@@ -357,6 +357,8 @@ The cover required additional clearance around the LeviQ load-cell assembly.
 
 Without enough clearance, tightening the cover applied force to the load cell and caused false probe triggers.
 
+In the later diagnostic branch, I removed the cover and clarified that the LeviQ electronics were still installed. The cover and associated fan/light/printed parts were off during that phase; this was not an electrically disconnected printhead test. No final reassembly state was documented. The retained-parts inventory is not a claim that every part was fitted during every diagnostic run.
+
 ## Toolhead LED
 
 The original LED is retained.
@@ -421,6 +423,8 @@ A LOW/HIGH pulse on the reset line before every probe attempt made the probe sta
 - Bed meshing
 - KAMP adaptive meshing
 
+Those were initial verification results. Later trigger shifts and homing failures recurred despite reset-timing experiments, and a further hotend replacement did not eliminate them. The original LeviQ element and electronics were not reported replaced. Their exact contribution remains unresolved; see [the follow-up investigation](./Issues.md#intermittent-trigger-shifts-after-the-initial-fixes).
+
 The reset sequence is documented in:
 
 - [`leviq_probe.cfg`](./config/leviq_probe.cfg)
@@ -444,6 +448,8 @@ Current verified features:
 Current values remain machine- and material-specific.
 
 The long Bowden tube results in a higher Pressure Advance value than a typical direct-drive system.
+
+The tube was completely disconnected for some later probe-isolation tests, and large errors persisted. Subsequent motion tests again mentioned Bowden behavior, so the whole investigation must not be labelled Bowden-free. No direct-drive conversion was reported.
 
 ## Filament runout sensor
 
@@ -469,7 +475,7 @@ E0-DET / PC2
 
 The original hotend was damaged and replaced with a similar original-style unit.
 
-The current system uses:
+The established hotend configuration uses:
 
 - 24 V heater
 - 100 kΩ-style thermistor configuration
@@ -477,7 +483,7 @@ The current system uses:
 - Original harness arrangement
 - Original-style mechanical mounting
 
-The hotend has been verified through:
+The earlier hotend installation was verified through:
 
 - Plausible room-temperature reading
 - Controlled heating
@@ -486,6 +492,12 @@ The hotend has been verified through:
 - Successful prints
 
 PID values are machine-specific and are not hardware specifications.
+
+### Further replacement during LeviQ diagnosis
+
+I later reported leakage from the nozzle and up near the heatbreak and tightened the nozzle. A further hotend replacement was then reported, but tolerance failures and unstable probe coordinates remained. This was not a replacement of the LeviQ electronics or confirmation that the load-cell assembly was fault-free.
+
+The latest replacement's model, nozzle geometry and exact heater/thermistor components were not documented. The repository's existing heater configuration therefore remains the published reference, not an independently verified specification for that replacement. The final returned probing series was reported at 220 °C nozzle / 50 °C bed, but no new PID calibration, Z-offset calibration or successful post-investigation print was supplied. See [Issues.md](./Issues.md#leakage-tightening-and-a-further-hotend-replacement).
 
 ---
 
@@ -606,7 +618,7 @@ Bed geometry, gantry alignment and mesh values remain machine-specific.
 
 - Original Trigorilla mainboard
 - Original display interface
-- Damaged hotend
+- Damaged hotend, followed by a further replacement reported during LeviQ diagnosis
 - Broken printhead cover
 - Mainboard mounting plate
 
