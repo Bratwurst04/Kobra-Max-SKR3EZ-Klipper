@@ -2,15 +2,17 @@
 This repository documents my conversion of an original Anycubic Kobra Max to a BIGTREETECH SKR 3 EZ running Klipper.
 The build retains most of the original printer hardware, including the Bowden extruder, motors, fans, external bed MOSFET and LeviQ strain-gauge probe.
 
+This is primarily my own build record, and secondarily a reference for similar conversions. Start with the [dated status and intended Orca workflow](./docs/STATUS.md), then use the detailed documents below. The public cfg files remain an older reference, not the complete configuration read from the machine on 28 October 2026.
+
 > [!WARNING]
 > This repository is very much a work in progress!
-> The wiring and configuration have been tested on **my** Anycubic Kobra Max and SKR 3 EZ.  
+> The wiring and earlier configurations have historical test reports from **my** Anycubic Kobra Max and SKR 3 EZ. The files in this tree have missing prerequisites and explicit local-identity placeholders; they are not a ready-to-run conversion package.
 > Anycubic used multiple board and harness revisions, so verify all wiring, voltages, polarities and motor coil pairs on your own machine.
 > Do not blindly copy configuration values. Incorrect wiring or configuration can damage hardware.
 
 ## Project overview
 
-| Component | Current setup |
+| Component | Documented build |
 |---|---|
 | Printer | Original Anycubic Kobra Max |
 | Mainboard | BIGTREETECH SKR 3 EZ |
@@ -20,7 +22,7 @@ The build retains most of the original printer hardware, including the Bowden ex
 | Interface | Mainsail and Moonraker |
 | Firmware | Klipper |
 | Extruder | Original Bowden extruder |
-| Hotend | Replacement hotend; current sensor profile reverted to `EPCOS 100K B57560G104F` after a failed `Generic 3950` trial; final retuning remains incomplete |
+| Hotend | Original-style replacement; exact installed model and sensor part unconfirmed. `EPCOS 100K B57560G104F` is the configured profile, not a physical part identification |
 | Z probe | Original LeviQ strain gauge |
 | Heated bed | Original bed and external MOSFET |
 | Adaptive mesh | KAMP |
@@ -41,6 +43,7 @@ The build retains most of the original printer hardware, including the Bowden ex
 
 | Document | Description |
 |---|---|
+| [Dated status](./docs/STATUS.md) | October read-only observations, laptop test readiness and remaining evidence limits |
 | [Wiring](./docs/Wiring.md) | Verified connector mapping, voltages, motor coils and functional tests |
 | [Configuration](./docs/config/config.md) | Purpose of each cfg file and values that must be changed or calibrated |
 | [Issues](./docs/Issues.md) | Symptoms, causes and fixes encountered during the conversion |
@@ -48,8 +51,12 @@ The build retains most of the original printer hardware, including the Bowden ex
 | [STL files](./docs/stl/) | Modified mounting and printhead parts used in this build |
 | [Hardware](./docs/Hardware.md) | Exact hardware inventory, retained components, replacements and pending additions |
 | [Project journey](./docs/Journey.md) | Chronological development history, failures, discoveries and verified conclusions |
+| [Audit index](./AUDIT_REPORT.md) | English summary and immutable source for the historical September audit |
+| [Repository working rules](./AGENTS.md) | Evidence, privacy and change-review rules for human and AI contributors |
 
-## Verification status
+## Historical verification record
+
+The table below preserves the reports available to the September documentation. On **28 October 2026**, I reported no known current fault; the read-only snapshot and a laptop export were checked, but no laptop print or physical test was performed. Read [dated status](./docs/STATUS.md) before interpreting an old “pending” or “unresolved” label as today's machine state. Earlier success and later open reports both remain part of the history.
 
 | Function | Status | Notes |
 |---|---|---|
@@ -70,6 +77,10 @@ The build retains most of the original printer hardware, including the Bowden ex
 | Filament runout sensor | ⏳ Pending | Wiring mapped to PC2; automatic start check and pause behavior were planned but not yet functionally verified |
 
 The dated tuning and upgrade reports supplement the separate LeviQ/network investigations; their cross-branch order is not fully established. Earlier successes do not close those later-reported faults. The [configuration guide](./docs/config/config.md#input-shaper-and-nozzle-cleaner-versus-this-snapshot) distinguishes machine reports from features absent in the published cfg files.
+
+## Intended everyday workflow
+
+**Power on → open OrcaSlicer (Moonraker/Mainsail when needed) → Print.** This is the target workflow. The earlier working reference belongs to the home PC; laptop printing remains untried. The exact reviewed cube export passed static file checks only. Its first attended readiness and print session is still required; [status](./docs/STATUS.md) records the boundaries and known start-chain questions.
 
 ---
 
@@ -123,7 +134,9 @@ Mainsail is used as the primary interface.
 
 </details>
 
-## Current work
+## Work recorded before the October return
+
+These items preserve earlier development questions. S01 now captures definitions that were absent from the public reference, including wipe and runout setup; configuration presence does not establish physical function. Use the [dated status](./docs/STATUS.md) for the current scope.
 
 ### Tuning
 
@@ -160,7 +173,7 @@ For now, the repository should be treated as:
 
 1. A verified wiring reference
 2. A [machine-specific reference configuration snapshot](./docs/config/config.md#published-snapshot-and-host-state), with prerequisites and limitations documented there
-3. A record of problems and solutions from the conversion
+3. A record of problems and solutions from the conversion, with [dated evidence limits](./docs/STATUS.md)
 
 > [!CAUTION]
 > Always confirm your own board revision, MCU model and wiring before following this repository.

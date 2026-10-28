@@ -1,6 +1,6 @@
 # Configuration files
 
-This directory contains the Klipper configuration used by this build.
+This directory contains an older Klipper reference configuration from this build. It is not the complete S01 machine snapshot captured on 28 October 2026; use [dated status](../STATUS.md) for that distinction and current test readiness.
 
 The configuration is split by function so that wiring, motion, heating, probing and macros can be reviewed independently.
 
@@ -10,7 +10,7 @@ The configuration is split by function so that wiring, motion, heating, probing 
 > Do not copy them blindly. MCU identifiers, paths, movement limits, motor directions, temperatures, PID values, Z offset, mesh limits, motor currents and extrusion calibration may differ on another machine.
 
 > [!NOTE]
-> Some comments inside the cfg files are currently written in Swedish.
+> Every `REPLACE_WITH_YOUR_...` value is a deliberate, non-working placeholder. Replace the complete MCU path and the actual host data path locally; never copy these labels as real identities. Comments and descriptions are in English. Historical numerical settings and pins have not been retuned by this documentation update.
 
 ## Configuration overview
 
@@ -50,7 +50,7 @@ The cfg files preserve a machine-specific reference, not a self-contained, immed
 | Later motion tuning | Snapshot still uses X/Y 64, Z/E 16 microsteps and 0.70/0.40 A run/hold currents on XYZ | A later live experiment used X/Y/Z/E run currents about 0.80/0.90/0.80/0.80 A, 64/64/32/32 microsteps, no separate hold current, X/Y interpolation enabled and Z/E interpolation disabled; not written into this snapshot |
 | Later pause/cancel behavior | Snapshot does not contain the custom recovery macros | User reported improved behavior after changing pause/cancel parking for position-loss cases; exact final live macro was not returned |
 
-The required `z_offset` is confirmed by the [upstream probe reference](https://www.klipper3d.org/Config_Reference.html#probe), checked during this documentation review. No cfg file was changed and no startup test of the distributed snapshot was performed as part of this update.
+The required `z_offset` is confirmed by the [upstream probe reference](https://www.klipper3d.org/Config_Reference.html#probe), checked during the earlier documentation review. That review did not change functional cfg values or perform a startup test of the distributed snapshot. The October documentation/privacy update changes comments, a description and explicit identity/path placeholders; numerical settings, pins, includes and macro commands remain the same. No startup test was performed in this update either.
 
 ### Input Shaper and nozzle cleaner versus this snapshot
 
@@ -90,7 +90,7 @@ Klipper-Backup activity and a separate computer/GitHub config copy were reported
 
 ### Host startup versus printer configuration
 
-The early `ModuleNotFoundError: No module named 'greenlet'` occurred in `/home/admin/klippy-env/bin/python` before Klippy could process the configuration. Restoring the host's Python dependencies resolved that reported startup failure; changing MCU pins or rebuilding the SKR firmware was not the repair. See [the recorded issue](../Issues.md#klippy-exited-before-creating-its-log).
+The early `ModuleNotFoundError: No module named 'greenlet'` occurred in `/home/REPLACE_WITH_YOUR_HOST_USER/klippy-env/bin/python` before Klippy could process the configuration. The username is redacted in this historical path. Restoring the host's Python dependencies resolved that reported startup failure; changing MCU pins or rebuilding the SKR firmware was not the repair. See [the recorded issue](../Issues.md#klippy-exited-before-creating-its-log).
 
 Wi-Fi profiles, autoconnect settings and power-saving settings are host/network configuration, not `printer.cfg` settings. Their later unresolved history is documented in [Issues.md](../Issues.md#recurring-network-latency-and-loss-of-access); no working NetworkManager profile or `moonraker.conf` is included in this cfg snapshot.
 
@@ -105,7 +105,7 @@ The value in `printer.cfg` is only a placeholder:
 
 ```ini
 [mcu]
-serial: /dev/serial/by-id/usb-Klipper_stm32h.........
+serial: /dev/serial/by-id/REPLACE_WITH_YOUR_MCU_DEVICE_ID
 ```
 
 Find the correct path on your own Raspberry Pi:
@@ -114,7 +114,7 @@ Find the correct path on your own Raspberry Pi:
 ls -l /dev/serial/by-id/
 ```
 
-Copy the complete result into `printer.cfg`.
+Replace the **entire** example path with the complete detected path for your own MCU. Do not construct a device ID from the example text or leave `REPLACE_WITH_YOUR_MCU_DEVICE_ID` in a live configuration. The documented board/MCU type remains SKR 3 EZ / STM32H723; a USB identity is a different, machine-specific value.
 
 Do **not** shorten the identifier.
 
@@ -125,10 +125,10 @@ This path is user-specific:
 
 ```ini
 [virtual_sdcard]
-path: /home/admin/printer_data/gcodes
+path: /home/REPLACE_WITH_YOUR_HOST_USER/printer_data/gcodes
 ```
 
-Replace `admin` if your Linux username or Moonraker data path is different.
+Replace `REPLACE_WITH_YOUR_HOST_USER` and verify the complete actual Moonraker/Klipper G-code directory. Your installation can use a different home or data layout; the example is not a directory-creation instruction.
 
 
 ## 3. Disable unavailable extensions
@@ -545,7 +545,7 @@ The published `PRINT_START` contains `M104 S150` before homing and `M109 S{EXTRU
 
 The separate live snapshot `config(1).zip`, attached earlier in this troubleshooting chat and inspected there, contained `M109 S150` followed by `G4 P2000` before the second Z home. That is a branch-specific live-machine difference from the cfg files published in this repository. Its exact ordering relative to the later documentation branches is not established, so this documentation records the divergence without silently replacing `macros.cfg`.
 
-The opening handover also reported `extruder not hot enough` after some failed KAMP/mesh attempts. Continuing toward purge was a suspected secondary issue, not a demonstrated control-flow diagnosis or completed macro fix. No cfg or macro was changed in this documentation update.
+The opening handover also reported `extruder not hot enough` after some failed KAMP/mesh attempts. Continuing toward purge was a suspected secondary issue, not a demonstrated control-flow diagnosis or completed macro fix. No macro command sequence was changed in this documentation/privacy update.
 
 ### Proposed temporary saved-mesh fallback
 

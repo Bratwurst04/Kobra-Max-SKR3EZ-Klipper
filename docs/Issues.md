@@ -720,14 +720,14 @@ Moonraker reported that it could not connect to Klipper. `klipper.service` repea
 The system journal, rather than a Klipper log, exposed the failure:
 
 ```text
-File "/home/admin/klipper/klippy/reactor.py", line 7, in <module>
+File "/home/REPLACE_WITH_YOUR_HOST_USER/klipper/klippy/reactor.py", line 7, in <module>
     import greenlet
 ModuleNotFoundError: No module named 'greenlet'
 ```
 
 ### Cause
 
-The interpreter used by the service was `/home/admin/klippy-env/bin/python`; its environment could not import `greenlet`. This failure occurred while importing Klippy, before the printer configuration or MCU connection could be evaluated.
+The interpreter used by the service was `/home/REPLACE_WITH_YOUR_HOST_USER/klippy-env/bin/python`; its environment could not import `greenlet`. The username in these historical paths is replaced by an explicit placeholder. This failure occurred while importing Klippy, before the printer configuration or MCU connection could be evaluated.
 
 ### Recovery and verification
 

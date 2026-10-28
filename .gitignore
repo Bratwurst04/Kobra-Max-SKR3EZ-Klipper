@@ -1,0 +1,35 @@
+# Local review evidence and private machine material: never force-add these.
+/reviews/
+/.private/
+/.runtime/
+/.secrets/
+/evidence/
+/printer/
+/coordination/
+/exports/
+
+# Credentials, raw logs, and local backup archives.
+.env
+.env.*
+!.env.example
+secrets.conf
+secrets.json
+credentials.json
+id_rsa
+id_ed25519
+*.key
+*.pem
+*.pfx
+*.p12
+*.log
+*.zip
+*.7z
+*.bkp
+*.bak
+*.backup
+printer-[0-9]*.cfg
+moonraker-[0-9]*.conf
+
+__pycache__/
+node_modules/
+.venv/
