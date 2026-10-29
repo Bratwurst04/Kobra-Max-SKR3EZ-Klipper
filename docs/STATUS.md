@@ -1,6 +1,6 @@
 # Dated machine and workflow status
 
-Updated **2026-10-28**. This page records the owner's machine and the evidence available on that date. It is not a claim about the printer's live state whenever this page is read. Raw machine snapshots and slicer/test files are kept outside this public repository.
+Updated **2026-10-29**. This page records the owner's machine and the evidence available on that date. It is not a claim about the printer's live state whenever this page is read. Raw machine snapshots and slicer/test files are kept outside this public repository.
 
 ## Intended everyday flow
 
@@ -21,6 +21,8 @@ P04 SHA-256: `2f61271991311096d37eb77c96b54aaa1843adee811a6d3490701fe3857c8d6c`.
 
 **OrcaSlicer's “Emit limits to G-code” flag is ignored for Klipper**, as the [official Motion Ability documentation](https://github.com/OrcaSlicer/OrcaSlicer/wiki/printer_motion_ability#emit-limits-to-g-code) states. Metadata value `1` was not a defect and did not require changing it to `0`. The process's actual acceleration commands and separate slicer limits are distinct. The earlier local review requirement to change this flag was withdrawn.
 
+On 29 October, five relevant Klipper source files on disk, covering firmware retraction, macros, movement state, command dispatch and file error handling, matched the [pinned official revision](https://github.com/Klipper3d/klipper/tree/7046bd00ef5c30dec6febc724f8d22967433c45c). This verifies those disk files, not the whole installation, loaded process or package bytes, material state or physical function. The start and recovery contract for retraction remains unresolved.
+
 ## How S01 differs from the public reference
 
 | Area | Dated S01 observation | Interpretation |
@@ -38,7 +40,8 @@ The [configuration guide](config/config.md) describes the older files in this tr
 - The configured wipe waits for 230 °C independently of P04's 210 °C request. Exact replacement-hotend identity and its temperature rating are unverified. The owner describes an original-style replacement that is not all-metal. A candidate product listing is insufficient to turn this into a confirmed bill of materials or safe temperature ceiling. S01's EPCOS profile and `max_temp: 280` are configuration observations, not component ratings.
 - Physical LeviQ behavior, brush/contact height, travel clearance and the complete start sequence need attended verification. Historical intermittent probe, extrusion and network reports remain in [Issues](Issues.md); their old “unresolved” labels do not establish a new fault today.
 - A local coordinate-guard candidate rejects the documented purge target X425 beyond configured X415 before its own commands are returned. It leaves the reviewed cube's nominal XYZ/E sequence unchanged. It was not transferred or activated. Retraction/state handling remains a separate open review; no isolated G10/G11 correction is implied.
-- The inspected historical backup archives do not contain the complete S01 include set; all three required KAMP targets are absent. The separate intended automatic-backup target has no advertised revision in the authenticated Git read. The read-only diagnosis identified the tool's updater metadata, but could not read the actual job configuration or establish its destination, scheduling or failure cause. No specific fix or restore procedure has been verified; read access is not a backup or restore test.
+- The inspected historical backup archives lack all three required KAMP targets. Read-only inspection on 29 October also bound the installed [Klipper-Backup revision](https://github.com/Staubgeborener/Klipper-Backup/tree/77d83ac3169839bdfadc81f9adeddf21d637a536), actual job configuration and configured destination. The selected copy path skips the three KAMP cfg files and `mainsail.cfg` behind known links; their four logical include paths are absent from the local backup commit. All four targets were stable with recorded file hashes and no further include headers in those files. That closes only this static include chain, not a complete restore set.
+- Successful remote delivery and a full restore remain unverified. A fresh remote read advertised no revision; existing job records showed grouped HTTP access/target and policy errors without identifying a specific credential or policy cause. Service completion is not proof of delivery. A local repair candidate is being prepared; it has not been deployed or tested live.
 
 ## Reading the older documentation
 
